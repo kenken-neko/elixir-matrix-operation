@@ -189,12 +189,12 @@ defmodule MatrixOperation do
     Liner equations are solved.
 
     #### Examples
-        iex> MatrixOperation.liner_equations([1, 0, 0], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        iex> MatrixOperation.linear_equations([1, 0, 0], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         [1.0, 0.0, 0.0]
-        iex> MatrixOperation.liner_equations([3, -7, 4], [[0, -2, 1], [-1, 1, -4], [3, 3, 1]])
+        iex> MatrixOperation.linear_equations([3, -7, 4], [[0, -2, 1], [-1, 1, -4], [3, 3, 1]])
         [2.0, -1.0, 1.0]
     """
-  def liner_equations(t, a) do
+  def linear_equations(t, a) do
     det_a = determinant(a)
     condition_det(t, a, det_a)
   end
@@ -202,12 +202,12 @@ defmodule MatrixOperation do
     nil
   end
   defp condition_det(t, a, det_a) do
-    liner_equations_sub(t, a, 0, [])
+    linear_equations_sub(t, a, 0, [])
   end
-  defp liner_equations_sub(t, a, i, output) when i < length(a) do
-    liner_equations_sub(t, a, i + 1, output ++ [cramer(t, a, i)])
+  defp linear_equations_sub(t, a, i, output) when i < length(a) do
+    linear_equations_sub(t, a, i + 1, output ++ [cramer(t, a, i)])
   end
-  defp liner_equations_sub(t, a, i, output) when i == length(a) do
+  defp linear_equations_sub(t, a, i, output) when i == length(a) do
     output
   end
 
@@ -338,7 +338,7 @@ defmodule MatrixOperation do
 
 
   @doc """
-    Hadamard subtraction
+    Matrix subtraction
 
     #### Examples
         iex> MatrixOperation.subtract([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [3, 2, 2]])
