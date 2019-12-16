@@ -23,3 +23,14 @@ Matrix operation library in Elixir.
 * A row of a matrix is got. 
 * A column of a matrix is got. 
 * A row of a matrix is deleted. 
+
+
+## Installation
+You can add this pacakage in your mix.exs file:
+```elixir
+def deps do
+  [
+    {:matrix_operation, "~> 0.1.0"}
+  ]
+end
+```
