@@ -26,7 +26,7 @@ Matrix operation library in Elixir.
 
 
 ## Installation
-You can add this pacakage in your mix.exs file:
+You can install this package by adding this code to dependencies in your mix.exs file:
 ```elixir
 def deps do
   [
