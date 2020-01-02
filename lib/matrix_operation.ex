@@ -417,4 +417,93 @@ defmodule MatrixOperation do
     const_multiple(a, b)
   end
 
+
+  @doc """
+    eigenvalue
+
+    #### Examples
+      iex> MatrixOperation.eigenvalue([[3, 1], [2, 2]])
+      [4.0, 1.0]
+      iex> MatrixOperation.eigenvalue([[6, -3], [4, -1]])
+      [3.0, 2.0]
+      iex> MatrixOperation.eigenvalue([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
+      [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
+      iex> MatrixOperation.eigenvalue([[1, 2, 3], [2, 1, 3], [3, 2, 1]])
+      [5.999999995559568, -2.000000031083018, -0.99999996447655]
+  """
+  def eigenvalue([[a11, a12], [a21, a22]]) do
+    quadratic_formula(1, -a11-a22, a11*a22-a12*a21)
+  end
+  def eigenvalue([[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]) do
+    a = -1
+    b = a11 + a22 + a33
+    c = a21*a12 + a13*a31 + a32*a23 - a11*a22 - a11*a33 - a22*a33
+    d = a11*a22*a33 + a12*a23*a31 + a13*a32*a21 - a11*a32*a23 - a22*a31*a13 - a33*a21*a12
+    cubic_formula(a, b, c, d)
+  end
+  defp quadratic_formula_sub(a, b, c) when b*b < 4*a*c do
+    nil
+  end
+  defp quadratic_formula(a, b, c) do
+    quadratic_formula_sub(a, b, c)
+  end
+  defp quadratic_formula_sub(a, b, c) do
+    d = :math.sqrt(b * b - 4 * a * c)
+    [0.5*(-b + d)/a, 0.5*(-b - d)/a]
+  end
+  defp cubic_formula(a, b, c, d) do
+    cubic_formula_sub(a, b, c, d)
+  end
+  defp cubic_formula_sub(a, b, c, d) when -4*a*c*c*c-27*a*a*d*d+b*b*c*c+18*a*b*c*d-4*b*b*b*d < 0 do
+    nil
+  end
+  defp cubic_formula_sub(a, b, c, d) do
+    ba = b/a
+    ca = c/a
+    da = d/a
+
+    const1 = (27*da + 2*ba*ba*ba - 9*ba*ca)/54
+    const2 = cubic_formula_sub2(const1*const1 + :math.pow((3*ca - ba*ba)/9, 3))
+    const_plus  = csqrt([-const1 + Enum.at(const2, 0), Enum.at(const2, 1)], 3)
+    const_minus = csqrt([-const1 - Enum.at(const2, 0), -Enum.at(const2, 1)], 3)
+    root3 = :math.sqrt(3)
+
+    x1 = Enum.at(const_plus, 0) + Enum.at(const_minus, 0) - ba/3
+    x2 = -0.5 * Enum.at(const_plus, 0) - 0.5 * root3 * Enum.at(const_plus, 1) - 0.5 * Enum.at(const_minus, 0) + 0.5 * root3 * Enum.at(const_minus, 1) - ba/3
+    x3 = -0.5 * Enum.at(const_plus, 0) + 0.5 * root3 * Enum.at(const_plus, 1) - 0.5 * Enum.at(const_minus, 0) - 0.5 * root3 * Enum.at(const_minus, 1) - ba/3
+
+    [x1, x2, x3]
+  end
+  defp cubic_formula_sub2(x) when x < 0 do
+    [0, :math.sqrt(-x)]
+  end
+  defp cubic_formula_sub2(x) do
+    [:math.sqrt(x), 0]
+  end
+  defp atan(x) when x < 0 do
+    y = atan(-x)
+    -1 * y
+  end
+  defp atan(x) do
+    atan_sub(x, 0, 0)
+  end
+  defp atan_sub(x, z, s) when z < x do
+    del = 0.0000001
+    z = z + del
+    s = s + del/(z*z+1)
+    atan_sub(x, z, s)
+  end
+  defp atan_sub(_, _, s) do
+    s
+  end
+  defp csqrt([re, im], n) when re == 0 do
+    nil
+  end
+  defp csqrt([re, im], n) do
+    r = :math.pow(re*re+im*im, 0.5/n)
+    re2 = r*(:math.cos(atan(im/re)/n))
+    im2 = r*(:math.sin(atan(im/re)/n))
+    [re2, im2]
+  end
+
 end
