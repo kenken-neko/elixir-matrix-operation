@@ -419,7 +419,7 @@ defmodule MatrixOperation do
 
 
   @doc """
-    eigenvalue
+    eigenvalue [R^2/R^3 matrix]
 
     #### Examples
       iex> MatrixOperation.eigenvalue([[3, 1], [2, 2]])
