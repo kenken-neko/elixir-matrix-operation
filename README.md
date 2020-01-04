@@ -15,10 +15,14 @@ Matrix operation library in Elixir.
 * Hadamard division
 * Hadamard power
 * Tensor product
+* Eigen value (2×2 or 3×3 matrix by algebratic method)
+* Eigen value and vector (n×n matrix by iteration method)
+
     
 
 ## Sub Operations：
 * Numbers of row and column of a matrix are got. 
+* A n-th unit matrix is got
 * A element of a matrix is got. 
 * A row of a matrix is got. 
 * A column of a matrix is got. 
