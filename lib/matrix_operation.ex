@@ -445,7 +445,6 @@ defmodule MatrixOperation do
     d = a11*a22*a33 + a12*a23*a31 + a13*a32*a21 - a11*a32*a23 - a22*a31*a13 - a33*a21*a12
     cubic_formula(a, b, c, d)
   end
-  # in preparation
   def eigenvalue(a) do
     "2×2 or 3×3 matrix only"
   end
