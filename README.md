@@ -15,8 +15,8 @@ Matrix operation library in Elixir.
 * Hadamard division
 * Hadamard power
 * Tensor product
-* Eigen value (2×2 or 3×3 matrix by algebratic method)
-* Eigen value and vector (n×n matrix by iteration method)
+* Eigenvalue (2×2 or 3×3 matrix by algebratic method)
+* Eigenvalue and eigenvector (n×n matrix by iteration method)
 
     
 
