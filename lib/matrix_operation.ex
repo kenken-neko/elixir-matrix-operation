@@ -422,7 +422,6 @@ defmodule MatrixOperation do
 
   @doc """
     eigenvalue [R^2/R^3 matrix]
-
     #### Examples
       iex> MatrixOperation.eigenvalue([[3, 1], [2, 2]])
       [4.0, 1.0]
@@ -458,19 +457,16 @@ defmodule MatrixOperation do
     d = :math.sqrt(b * b - 4 * a * c)
     [0.5*(-b + d)/a, 0.5*(-b - d)/a]
   end
-  def cubic_formula(a, b, c, d) do
-    cubic_formula_sub(a, b, c, d)
-  end
-  def cubic_formula_sub(a, b, c, d) when -4*a*c*c*c-27*a*a*d*d+b*b*c*c+18*a*b*c*d-4*b*b*b*d < 0 do
+  def cubic_formula(a, b, c, d) when -4*a*c*c*c-27*a*a*d*d+b*b*c*c+18*a*b*c*d-4*b*b*b*d < 0 do
     nil
   end
-  def cubic_formula_sub(a, b, c, d) do
+  def cubic_formula(a, b, c, d) do
     ba = b/a
     ca = c/a
     da = d/a
 
     const1 = (27*da + 2*ba*ba*ba - 9*ba*ca)/54
-    const2 = cubic_formula_sub2(const1*const1 + :math.pow((3*ca - ba*ba)/9, 3))
+    const2 = cubic_formula_sub(const1*const1 + :math.pow((3*ca - ba*ba)/9, 3))
     const_plus  = csqrt([-const1 + Enum.at(const2, 0), Enum.at(const2, 1)], 3)
     const_minus = csqrt([-const1 - Enum.at(const2, 0), -Enum.at(const2, 1)], 3)
     root3 = :math.sqrt(3)
@@ -481,10 +477,10 @@ defmodule MatrixOperation do
 
     [x1, x2, x3]
   end
-  def cubic_formula_sub2(x) when x < 0 do
+  def cubic_formula_sub(x) when x < 0 do
     [0, :math.sqrt(-x)]
   end
-  def cubic_formula_sub2(x) do
+  def cubic_formula_sub(x) do
     [:math.sqrt(x), 0]
   end
   def atan(x) when x < 0 do
@@ -516,12 +512,11 @@ defmodule MatrixOperation do
 
   @doc """
     Power iteration method (maximum eigen value and eigen vector)
-
     #### Examples
       iex> MatrixOperation.power_iteration([[3, 1], [2, 2]], 100)
-      [4.0, [0.7071067811865476, 0.7071067811865476]]
+      [4.0, [2.8284271247461903, 2.8284271247461903]]
       iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
-      [3.0, [0.3333333333333333, -0.6666666666666666, 0.6666666666666666]]
+      [3.0, [1.0, -2.0, 2.0]]
     """
   def power_iteration(a, max_k) do
     init_vec = random_column(length(a))
@@ -531,7 +526,7 @@ defmodule MatrixOperation do
     [xk_pre_vec] = transpose(xk_pre)
     # eigen value
     eigen_value = inner_product(xk_vec, xk_vec)/inner_product(xk_vec, xk_pre_vec)
-    [eigen_value, xk_pre_vec]
+    [eigen_value, xk_vec]
   end
   defp random_column(num) when num > 1 do
     random_column_sub(num, 0, [])
