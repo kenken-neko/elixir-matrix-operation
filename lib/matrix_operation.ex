@@ -520,7 +520,7 @@ defmodule MatrixOperation do
     """
   def power_iteration(a, max_k) do
     init_vec = random_column(length(a))
-    xk_pre   = power_iteration_sub(a, init_vec, 1, max_k)
+    xk_pre   = power_iteration_sub(a, init_vec, max_k)
     # eigen vector
     [xk_vec]     = product(a, xk_pre) |> transpose
     [xk_pre_vec] = transpose(xk_pre)
@@ -535,7 +535,7 @@ defmodule MatrixOperation do
   defp random_column(num) do
     nil
   end
-  defp power_iteration_sub(a, v, k, max_k) do
+  defp power_iteration_sub(a, v, max_k) do
     # Normarization is for overflow suppression
     Enum.reduce(1..max_k, v, fn(_, acc) ->
       vp    = product(a, acc)
