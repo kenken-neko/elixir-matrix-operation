@@ -529,25 +529,19 @@ defmodule MatrixOperation do
     [eigen_value, xk_vec]
   end
   defp random_column(num) when num > 1 do
-    random_column_sub(num, 0, [])
+    tmp =  Enum.reduce(1..num, [], fn(_, acc) -> [Enum.random(0..50000)/10000 | acc] end)
+    transpose([tmp])
   end
   defp random_column(num) do
     nil
   end
-  defp random_column_sub(num, n, random_list) when num > n do
-    random_column_sub(num, n + 1, random_list ++ [[Enum.random(0..50000)/10000]])
-  end
-  defp random_column_sub(num, n, random_list) do
-    random_list
-  end
-  defp power_iteration_sub(a, v, k, max_k) when max_k >= k do
-    vp    = product(a, v)
-    [vpt] = transpose(vp)
-    vp_norm = const_multiple(1/:math.sqrt(inner_product(vpt, vpt)), vp) # for overflow suppression
-    power_iteration_sub(a, vp_norm, k + 1, max_k)
-  end
-  defp power_iteration_sub(_, v, _, _) do
-    v
+  defp power_iteration_sub(a, v, k, max_k) do
+    # Normarization is for overflow suppression
+    Enum.reduce(1..max_k, v, fn(_, acc) ->
+      vp    = product(a, acc)
+      [vpt] = transpose(vp)
+      const_multiple(1/:math.sqrt(inner_product(vpt, vpt)), vp)
+    end)
   end
 
 end
