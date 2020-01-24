@@ -14,7 +14,7 @@ defmodule MatrixOperation do
     max_number = Enum.max(columns_number)
     if( max_number == Enum.min(columns_number), do: [length(a), max_number] , else: nil)
   end
-  def row_column_matrix(a) do
+  def row_column_matrix(_) do
     nil
   end
   defp row_column_matrix_sub(row_a, i) when i != length(row_a) do
