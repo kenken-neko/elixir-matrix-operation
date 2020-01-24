@@ -241,7 +241,7 @@ defmodule MatrixOperation do
     linear_equations_sub(a, t, i + 1, output ++ [cramer(a, vertical_vec, i)])
   end
 
-  defp linear_equations_sub(a, t, i, output) when i == length(a) do
+  defp linear_equations_sub(a, _t, i, output) when i == length(a) do
     output
   end
 
