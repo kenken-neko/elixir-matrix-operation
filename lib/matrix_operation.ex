@@ -595,7 +595,7 @@ defmodule MatrixOperation do
     transpose([tmp])
   end
 
-  defp random_column(num) do
+  defp random_column(_num) do
     nil
   end
 
