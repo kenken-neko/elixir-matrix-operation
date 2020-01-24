@@ -560,7 +560,7 @@ defmodule MatrixOperation do
     s
   end
 
-  def csqrt([re, im], n) when re == 0 do
+  def csqrt([re, _im], _n) when re == 0 do
     nil
   end
 
