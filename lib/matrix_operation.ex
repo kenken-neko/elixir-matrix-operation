@@ -485,7 +485,7 @@ defmodule MatrixOperation do
     cubic_formula(a, b, c, d)
   end
 
-  def eigenvalue(a) do
+  def eigenvalue(_a) do
     "2×2 or 3×3 matrix only"
   end
 
