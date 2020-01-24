@@ -211,7 +211,7 @@ defmodule MatrixOperation do
   defp condition_det(_, _, 0) do
     nil
   end
-  defp condition_det(a, t, det_a) do
+  defp condition_det(a, t, _) do
     linear_equations_sub(a, t, 0, [])
   end
   defp linear_equations_sub(a, t, i, output) when i < length(a) do
