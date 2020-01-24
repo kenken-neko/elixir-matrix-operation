@@ -192,7 +192,7 @@ defmodule MatrixOperation do
   defp replace_element_in_list(list, select_index, replace_element, i, output) when i < length(list) do
     replace_element_in_list(list, select_index, replace_element, i + 1, output ++ [Enum.at(list, i)])
   end
-  defp replace_element_in_list(list, select_index, replace_element, i, output) when i == length(list), do: output
+  defp replace_element_in_list(list, _select_index, _replace_element, i, output) when i == length(list), do: output
 
 
   @doc """
