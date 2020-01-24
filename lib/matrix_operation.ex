@@ -38,7 +38,7 @@ defmodule MatrixOperation do
   defp unit_matrix_sub(i, j) when i == j do
     1
   end
-  defp unit_matrix_sub(i, j) do
+  defp unit_matrix_sub(_i, _j) do
     0
   end
 
