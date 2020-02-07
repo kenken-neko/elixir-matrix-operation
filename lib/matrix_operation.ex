@@ -47,16 +47,20 @@ defmodule MatrixOperation do
   end
 
   @doc """
-    A n-th even matrix is got.
+    A m×n matrix having even-elements is got.
     #### Examples
-      iex> MatrixOperation.even_matrix(3, 0)
-      [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-      iex> MatrixOperation.even_matrix(2, 1)
-      [[1, 1], [1, 1]
+      iex> MatrixOperation.even_matrix(2, 3, 0)
+      [[0, 0, 0], [0, 0, 0]]
+      iex> MatrixOperation.even_matrix(3, 2, 1)
+      [[1, 1], [1, 1], [1, 1]]
     """
-  def even_matrix(n, s) when n > 0 and is_integer(n) do
-    index_list = Enum.to_list(1..n)
-    Enum.map(index_list, fn x -> Enum.map(index_list, & &1 * 0 + s) end)
+  def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
+    Enum.to_list(1..m) |>
+    Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
+  end
+
+  def even_matrix(_, _, _) do
+    nil
   end
 
   @doc """
@@ -645,22 +649,12 @@ defmodule MatrixOperation do
       ]
     """
   def variance_covariance_matrix(data) do
-    data_t = transpose(data)
-    average_vec = Enum.map(data_t, & Enum.sum(&1)/length(&1))
-    variance_covariance_matrix_sub(data_t, average_vec, [])
-  end
-
-  defp variance_covariance_matrix_sub([head_1|tail_1], [head_2|tail_2], output) when tail_1 != [] do
-    output_sub = Enum.map(head_1, & &1 - head_2)
-    output_new = output ++ [output_sub]
-    x = variance_covariance_matrix_sub(tail_1, tail_2, output_new)
+    x = data
+    |> transpose
+    |> Enum.map(&Enum.map(&1, fn x -> x - Enum.sum(&1)/length(&1) end))
     xt  = transpose(x)
     xtx = product(x, xt)
     const_multiple(1/length(xt), xtx)
-  end
-  defp variance_covariance_matrix_sub([head_1], [head_2], output) do
-    output_sub = Enum.map(head_1, & &1 - head_2)
-    output ++ [output_sub]
   end
 
 end
