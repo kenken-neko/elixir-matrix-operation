@@ -47,6 +47,23 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    A m×n matrix having even-elements is got.
+    #### Examples
+      iex> MatrixOperation.even_matrix(2, 3, 0)
+      [[0, 0, 0], [0, 0, 0]]
+      iex> MatrixOperation.even_matrix(3, 2, 1)
+      [[1, 1], [1, 1], [1, 1]]
+    """
+  def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
+    Enum.to_list(1..m) |>
+    Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
+  end
+
+  def even_matrix(_, _, _) do
+    nil
+  end
+
+  @doc """
   A element of a matrix is got.
   ## Examples
     iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
@@ -259,6 +276,20 @@ defmodule MatrixOperation do
 
   def const_multiple(const, a) when is_list(a) do
     Enum.map(a, &const_multiple(const, &1))
+  end
+
+  @doc """
+  A matrix is multiplied by a constant.
+  ## Examples
+      iex> MatrixOperation.const_addition(1, [1.0, 2.0, 3.0])
+      [2.0, 3.0, 4.0]
+  """
+  def const_addition(const, a) when is_number(a) do
+    const + a
+  end
+
+  def const_addition(const, a) when is_list(a) do
+    Enum.map(a, &const_addition(const, &1))
   end
 
   @doc """
@@ -607,4 +638,23 @@ defmodule MatrixOperation do
       const_multiple(1 / :math.sqrt(inner_product(vpt, vpt)), vp)
     end)
   end
+
+  @doc """
+    A variance-covariance matrix is generated
+    #### Examples
+      iex> MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
+      [
+        [466.66666666666663, 166.66666666666666],
+        [166.66666666666666, 66.66666666666666]
+      ]
+    """
+  def variance_covariance_matrix(data) do
+    x = data
+    |> transpose
+    |> Enum.map(&Enum.map(&1, fn x -> x - Enum.sum(&1)/length(&1) end))
+    xt  = transpose(x)
+    xtx = product(x, xt)
+    const_multiple(1/length(xt), xtx)
+  end
+
 end
