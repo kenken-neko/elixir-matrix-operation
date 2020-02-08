@@ -17,6 +17,7 @@ Matrix operation library in Elixir.
 * Tensor product
 * Eigenvalue (2×2 or 3×3 matrix by algebratic method)
 * Eigenvalue and eigenvector (n×n matrix by iteration method)
+* Variance covariance matrix
 
     
 
