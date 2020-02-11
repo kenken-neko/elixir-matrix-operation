@@ -17,17 +17,18 @@ Matrix operation library in Elixir.
 * Tensor product
 * Eigenvalue (2×2 or 3×3 matrix by algebratic method)
 * Eigenvalue and eigenvector (n×n matrix by iteration method)
-* Variance covariance matrix
 
     
 
 ## Sub Operations：
-* Numbers of row and column of a matrix are got. 
-* A n-th unit matrix is got
+* Numbers of row and column of a matrix are informed. 
+* A n-th unit matrix is generated.
+* A n×m even matrix is generated.
 * A element of a matrix is got. 
-* A row of a matrix is got. 
-* A column of a matrix is got. 
-* A row of a matrix is deleted. 
+* A row of a matrix is extracted. 
+* A column of a matrix is extracted. 
+* A row of a matrix is deleted.
+* A variance covariance matrix is generated.
 
 
 ## Installation
