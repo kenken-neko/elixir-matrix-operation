@@ -112,6 +112,18 @@ defmodule MatrixOperation do
   end
 
   @doc """
+  A row of a matrix is exchanged.
+  ## Examples
+      iex> MatrixOperation.exchange_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3, [1, 1, 1])
+      [[1, 2, 3], [4, 5, 6], [1, 1, 1]]
+  """
+  def exchange_one_row(matrix, exchange_index, exchange_list) do
+    matrix
+    |> Enum.with_index()
+    |> Enum.map(fn {x, i} -> if(i == exchange_index - 1, do: exchange_list, else: x) end)
+  end
+
+  @doc """
   Transpose of a matrix
   ## Examples
       iex> MatrixOperation.transpose([[1.0, 2.0], [3.0, 4.0]])
@@ -167,7 +179,8 @@ defmodule MatrixOperation do
 
   # 1×1 matrix
   defp determinant_sub(_, a) when length(a) == 1 do
-    nil
+    Enum.at(a, 0)
+    |> Enum.at(0)
   end
 
   # 2×2 matrix
@@ -655,6 +668,103 @@ defmodule MatrixOperation do
     xt  = transpose(x)
     xtx = product(x, xt)
     const_multiple(1/length(xt), xtx)
+  end
+
+  @doc """
+    Leading principal minors are generetaed
+    #### Examples
+      iex> MatrixOperation.leading_principal_minor([[1, 3, 2], [2, 5, 1], [3, 4, 5]], 2)
+      [[1, 3], [2, 5]]
+    """
+  def leading_principal_minor(a, k) do
+    Enum.slice(a, 0, k)
+    |> Enum.map(& Enum.slice(&1, 0, k))
+  end
+
+  @doc """
+    LU decomposition
+    #### Examples
+      iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
+      [
+        L: [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
+        U: [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
+      ]
+    """
+  def lu_decomposition(a) do
+    row_column = row_column_matrix(a)
+    # check the setupufficient condition
+    check_number = lu_decomposition_check(a, row_column)
+    if(check_number == 0, do: nil, else: lu_decomposition_sub(a, 0, length(a), [], []))
+  end
+
+  defp lu_decomposition_check(_, [row_num, column_num]) when row_num != column_num do
+    nil
+  end
+
+  defp lu_decomposition_check(a, [row_num, _]) do
+    Enum.to_list(1..row_num)
+    |> Enum.map(& leading_principal_minor(a, &1) |> determinant)
+    |> Enum.reduce(fn x, acc -> x * acc end)
+  end
+
+  defp lu_decomposition_sub(a, k, len_a, _, _) when k == 0 do
+    u_matrix = even_matrix(len_a, len_a, 0)
+               |> exchange_one_row(1, hd(a))
+    inverce_u11 = 1.0 / hd(hd(u_matrix))
+    a_factor = transpose(a)
+               |> get_one_row(1)
+               |> Enum.slice(1, len_a)
+    l_row = [1] ++ hd(const_multiple(inverce_u11, [a_factor]))
+    l_matrix = even_matrix(len_a, len_a, 0)
+               |> exchange_one_row(1, l_row)
+    lu_decomposition_sub(a, k + 1, len_a, l_matrix, u_matrix)
+  end
+
+  defp lu_decomposition_sub(a, k, len_a, l_matrix, u_matrix) when k != len_a do
+    a_t = transpose(a)
+    u_solve = u_cal(a, k, len_a, l_matrix, u_matrix)
+    u_matrix_2 = exchange_one_row(u_matrix, k + 1, u_solve)
+    l_solve = l_cal(a_t, k, len_a, l_matrix, u_matrix_2)
+    l_matrix_2 = exchange_one_row(l_matrix, k + 1, l_solve)
+    lu_decomposition_sub(a, k + 1, len_a, l_matrix_2, u_matrix_2)
+  end
+
+  defp lu_decomposition_sub(_, _, _, l_matrix, u_matrix) do
+    ["L": transpose(l_matrix), "U": u_matrix]
+  end
+
+  defp l_cal(a_t, k, len_a, l_matrix, u_matrix) do
+    a_factor = Enum.at(a_t, k) |> Enum.slice(k + 1, len_a)
+    u_extract = transpose(u_matrix) |> Enum.at(k)
+    l_row = transpose(l_matrix)
+    |> Enum.slice(k + 1, len_a)
+    |> Enum.map(& inner_product(&1, u_extract))
+    |> Enum.zip(a_factor)
+    |> Enum.map(fn {x, y} -> y - x end)
+
+    inverce_ujj = 1.0 / Enum.at(Enum.at(u_matrix, k), k)
+    [l_row_2] = const_multiple(inverce_ujj, [l_row])
+    [1] ++ l_row_2
+    |> add_zero_element(0, k)
+  end
+
+  defp u_cal(a, k, len_a, l_matrix, u_matrix) do
+    a_factor = Enum.at(a, k) |> Enum.slice(k, len_a)
+    l_extract = transpose(l_matrix) |> Enum.at(k)
+    transpose(u_matrix)
+    |> Enum.slice(k, len_a)
+    |> Enum.map(& inner_product(&1, l_extract))
+    |> Enum.zip(a_factor)
+    |> Enum.map(fn {x, y} -> y - x end)
+    |> add_zero_element(0, k)
+  end
+
+  defp add_zero_element(list, init, fin) when init != fin do
+    add_zero_element([0] ++ list, init + 1, fin)
+  end
+
+  defp add_zero_element(list, _, _) do
+    list
   end
 
 end
