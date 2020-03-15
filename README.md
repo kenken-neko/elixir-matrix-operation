@@ -5,7 +5,7 @@ Matrix operation library in Elixir.
 * Transpose
 * Trace
 * Determinant
-* Cramer's rule (to solve linear_equations)
+* Cramer's rule (to extract a specific solution of linear_equations)
 * Constant multiple
 * Inverse matrix
 * Product
