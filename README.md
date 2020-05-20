@@ -17,6 +17,9 @@ Matrix operation library in Elixir.
 * Tensor product
 * Eigenvalue (2×2 or 3×3 matrix by algebratic method)
 * Eigenvalue and eigenvector (n×n matrix by iteration method)
+* Variance covariance matrix
+* LU decomposition
+* Direct method (to solve linear_equations)
 
     
 
@@ -25,10 +28,9 @@ Matrix operation library in Elixir.
 * A n-th unit matrix is generated.
 * A n×m even matrix is generated.
 * A element of a matrix is got. 
-* A row of a matrix is extracted. 
-* A column of a matrix is extracted. 
-* A row of a matrix is deleted.
-* A variance covariance matrix is generated.
+* A row/column of a matrix is extracted. 
+* A row/column of a matrix is deleted.
+* A row/column of a matrix is exchanged.
 
 
 ## Installation
