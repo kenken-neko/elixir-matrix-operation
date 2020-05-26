@@ -28,7 +28,7 @@ I described the brief explanation (explanation.pdf) for a mathematical descripti
 * Numbers of row and column of a matrix are informed. 
 * A n-th unit matrix is generated.
 * A n×m even matrix is generated.
-* A element of a matrix is got. 
+* An element of a matrix is got. 
 * A row/column of a matrix is extracted. 
 * A row/column of a matrix is deleted.
 * A row/column of a matrix is exchanged.
