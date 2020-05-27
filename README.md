@@ -1,6 +1,6 @@
 # elixir-matrix-operation
 Matrix operation library in Elixir.  
-I described the brief explanation (explanation.pdf) for a mathematical description.
+The brief explanation (explanation.pdf) for a mathematical description is described.
 
 ## Operations:
 * Transpose
