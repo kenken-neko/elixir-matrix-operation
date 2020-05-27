@@ -16,8 +16,8 @@ I described the brief explanation (explanation.pdf) for a mathematical descripti
 * Hadamard division
 * Hadamard power
 * Tensor product
-* Eigenvalue (2×2 or 3×3 matrix by algebratic method)
-* Eigenvalue and eigenvector (n×n matrix by iteration method)
+* Eigenvalue (Algebratic method for 2×2 or 3×3 matrix)
+* Eigenvalue and eigenvector (Iteration method for n×n matrix)
 * Variance covariance matrix
 * LU decomposition
 * Direct method (to solve linear_equations)
