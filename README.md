@@ -1,5 +1,6 @@
 # elixir-matrix-operation
-Matrix operation library in Elixir.
+Matrix operation library in Elixir.  
+It is described the brief explanation (explanation.pdf) for a mathematical description.
 
 ## Operations:
 * Transpose
@@ -15,8 +16,8 @@ Matrix operation library in Elixir.
 * Hadamard division
 * Hadamard power
 * Tensor product
-* Eigenvalue (2×2 or 3×3 matrix by algebratic method)
-* Eigenvalue and eigenvector (n×n matrix by iteration method)
+* Eigenvalue (Algebratic method for 2×2 or 3×3 matrix)
+* Eigenvalue and eigenvector (Power iteration method for n×n matrix)
 * Variance covariance matrix
 * LU decomposition
 * Direct method (to solve linear_equations)
@@ -27,7 +28,7 @@ Matrix operation library in Elixir.
 * Numbers of row and column of a matrix are informed. 
 * A n-th unit matrix is generated.
 * A n×m even matrix is generated.
-* A element of a matrix is got. 
+* An element of a matrix is got. 
 * A row/column of a matrix is extracted. 
 * A row/column of a matrix is deleted.
 * A row/column of a matrix is exchanged.
@@ -41,4 +42,13 @@ def deps do
     {:matrix_operation, "~> 0.1.1"}
   ]
 end
+```
+
+## Notice
+The column and row numbers are specified by a integer from 1 (not from 0).
+<img src="https://user-images.githubusercontent.com/42142120/82437767-ed1afd00-9ad2-11ea-8ff0-223eb8f0b1d9.jpg" width="600">  
+For example,
+```
+MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
+1
 ```
