@@ -241,13 +241,15 @@ defmodule MatrixOperation do
   @doc """
   Cramer's rule
   ## Examples
-      iex> MatrixOperation.cramer([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]], 0)
+      iex> MatrixOperation.cramer([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]], 1)
       1.0
+      iex> MatrixOperation.cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[3], [-7], [4]], 1)
+      2.0
   """
   def cramer(a, vertical_vec, select_index) do
     [t] = transpose(vertical_vec)
     det_a = determinant(a)
-    cramer_sub(a, t, select_index, det_a)
+    cramer_sub(a, t, select_index - 1, det_a)
   end
 
   defp cramer_sub(_, _, _, nil), do: nil
@@ -282,8 +284,8 @@ defmodule MatrixOperation do
   ## Examples
       iex> MatrixOperation.linear_equations_cramer([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
       [1.0, 0.0, 0.0]
-      iex> MatrixOperation.linear_equations_cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[3], [-7], [4]])
-      [2.0, -1.0, 1.0]
+      iex> MatrixOperation.linear_equations_cramer([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
+      [1.0, 0.0, 0.0]
   """
   def linear_equations_cramer(a, vertical_vec) do
     # check the setupufficient condition
@@ -297,11 +299,169 @@ defmodule MatrixOperation do
 
   defp linear_equations_cramer_sub(a, t, i, output) when i < length(a) do
     vertical_vec = transpose([t])
-    linear_equations_cramer_sub(a, t, i + 1, output ++ [cramer(a, vertical_vec, i)])
+    linear_equations_cramer_sub(a, t, i + 1, output ++ [cramer(a, vertical_vec, i + 1)])
   end
 
   defp linear_equations_cramer_sub(a, _t, i, output) when i == length(a) do
     output
+  end
+
+  @doc """
+    Leading principal minors are generetaed
+    #### Examples
+      iex> MatrixOperation.leading_principal_minor([[1, 3, 2], [2, 5, 1], [3, 4, 5]], 2)
+      [[1, 3], [2, 5]]
+    """
+  def leading_principal_minor(a, k) do
+    Enum.slice(a, 0, k)
+    |> Enum.map(& Enum.slice(&1, 0, k))
+  end
+
+  @doc """
+    LU decomposition
+    #### Examples
+      iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
+      [
+        L: [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
+        U: [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
+      ]
+    """
+  def lu_decomposition(a) do
+    row_column = row_column_matrix(a)
+    # check the setupufficient condition
+    check_number = lu_decomposition_check(a, row_column)
+    if(check_number == 0, do: nil, else: lu_decomposition_sub(a, 0, length(a), [], []))
+  end
+
+  defp lu_decomposition_check(_, [row_num, column_num]) when row_num != column_num do
+    nil
+  end
+
+  defp lu_decomposition_check(a, [row_num, _]) do
+    Enum.to_list(1..row_num)
+    |> Enum.map(& leading_principal_minor(a, &1) |> determinant)
+    |> Enum.reduce(fn x, acc -> x * acc end)
+  end
+
+  defp lu_decomposition_sub(a, k, len_a, _, _) when k == 0 do
+    u_matrix = even_matrix(len_a, len_a, 0)
+               |> exchange_one_row(1, hd(a))
+    inverce_u11 = 1.0 / hd(hd(u_matrix))
+    a_factor = transpose(a)
+               |> get_one_row(1)
+               |> Enum.slice(1, len_a)
+    l_row = [1] ++ hd(const_multiple(inverce_u11, [a_factor]))
+    l_matrix = even_matrix(len_a, len_a, 0)
+               |> exchange_one_row(1, l_row)
+    lu_decomposition_sub(a, k + 1, len_a, l_matrix, u_matrix)
+  end
+
+  defp lu_decomposition_sub(a, k, len_a, l_matrix, u_matrix) when k != len_a do
+    a_t = transpose(a)
+    u_solve = u_cal(a, k, len_a, l_matrix, u_matrix)
+    u_matrix_2 = exchange_one_row(u_matrix, k + 1, u_solve)
+    l_solve = l_cal(a_t, k, len_a, l_matrix, u_matrix_2)
+    l_matrix_2 = exchange_one_row(l_matrix, k + 1, l_solve)
+    lu_decomposition_sub(a, k + 1, len_a, l_matrix_2, u_matrix_2)
+  end
+
+  defp lu_decomposition_sub(_, _, _, l_matrix, u_matrix) do
+    ["L": transpose(l_matrix), "U": u_matrix]
+  end
+
+  defp l_cal(a_t, k, len_a, l_matrix, u_matrix) do
+    a_factor = Enum.at(a_t, k) |> Enum.slice(k + 1, len_a)
+    u_extract = transpose(u_matrix) |> Enum.at(k)
+    l_row = transpose(l_matrix)
+    |> Enum.slice(k + 1, len_a)
+    |> Enum.map(& inner_product(&1, u_extract))
+    |> Enum.zip(a_factor)
+    |> Enum.map(fn {x, y} -> y - x end)
+
+    inverce_uii = 1.0 / Enum.at(Enum.at(u_matrix, k), k)
+    [l_row_2] = const_multiple(inverce_uii, [l_row])
+    [1] ++ l_row_2
+    |> add_zero_element(0, k)
+  end
+
+  defp u_cal(a, k, len_a, l_matrix, u_matrix) do
+    a_factor = Enum.at(a, k) |> Enum.slice(k, len_a)
+    l_extract = transpose(l_matrix) |> Enum.at(k)
+    transpose(u_matrix)
+    |> Enum.slice(k, len_a)
+    |> Enum.map(& inner_product(&1, l_extract))
+    |> Enum.zip(a_factor)
+    |> Enum.map(fn {x, y} -> y - x end)
+    |> add_zero_element(0, k)
+  end
+
+  defp add_zero_element(list, init, fin) when init != fin do
+    add_zero_element([0] ++ list, init + 1, fin)
+  end
+
+  defp add_zero_element(list, _, _) do
+    list
+  end
+
+  @doc """
+  Linear equations are solved by LU decomposition.
+  ## Examples
+      iex> MatrixOperation.linear_equations_direct([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
+      [1.0, 0.0, 0.0]
+      iex> MatrixOperation.linear_equations_direct([[4, 1, 1], [1, 3, 1], [2, 1, 5]], [[9], [10], [19]])
+      [1.0, 2.0, 3.0]
+  """
+  def linear_equations_direct(a, vertical_vec) do
+    # check the setupufficient condition
+    if determinant(a) == 0 do
+      nil
+    else
+      [t] = transpose(vertical_vec)
+      lu_decomposition_sub(a, t)
+    end
+  end
+
+  defp lu_decomposition_sub(a, t) do
+    ["L": l_matrix, "U": u_matrix] = lu_decomposition(a)
+    dim = length(l_matrix)
+    y = forward_substitution(l_matrix, t, [], 0, dim)
+    backward_substitution(u_matrix, y, [], dim, dim)
+  end
+
+  defp forward_substitution(l_matrix, t, _, k, dim) when k == 0 do
+    forward_substitution(l_matrix, t, [hd(t)], k + 1, dim)
+  end
+
+  defp forward_substitution(l_matrix, t, y, k, dim) when k != dim do
+    l_extract = Enum.at(l_matrix, k) |> Enum.slice(0, k)
+    y_extract = y |> Enum.slice(0, k)
+    ly = inner_product(l_extract, y_extract)
+    t_ly = Enum.at(t, k) - ly
+    forward_substitution(l_matrix, t, y ++ [t_ly], k + 1, dim)
+  end
+
+  defp forward_substitution(_, _, y, k, dim) when k == dim do
+    y
+  end
+
+  defp backward_substitution(u_matrix, y, _, k, dim) when k == dim do
+    dim_1 = dim - 1
+    y_n = Enum.at(y, dim_1)
+    u_nn = Enum.at(Enum.at(u_matrix, dim_1), dim_1)
+    backward_substitution(u_matrix, y, [y_n / u_nn], k - 1, dim)
+  end
+
+  defp backward_substitution(_, _, b, k, _) when k == 0 do
+    b
+  end
+
+  defp backward_substitution(u_matrix, y, b, k, dim) when k != dim do
+    k_1 = k - 1
+    u_extract = Enum.at(u_matrix, k_1) |> Enum.slice(k, dim)
+    lb = inner_product(u_extract, b)
+    inverce_uii = Enum.at(Enum.at(u_matrix, k_1), k_1)
+    t_lb = (Enum.at(y, k_1) - lb) / inverce_uii
+    backward_substitution(u_matrix, y, [t_lb] ++ b, k_1, dim)
   end
 
   @doc """
@@ -321,7 +481,7 @@ defmodule MatrixOperation do
   end
 
   @doc """
-  A matrix is multiplied by a constant.
+  A matrix is added by a constant.
   ## Examples
       iex> MatrixOperation.const_addition(1, [1.0, 2.0, 3.0])
       [2.0, 3.0, 4.0]
@@ -435,23 +595,6 @@ defmodule MatrixOperation do
   end
 
   @doc """
-  Hadamard product
-  ## Examples
-      iex> MatrixOperation.hadamard_product([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [3, 2, 2]])
-      [[6, 6, 3], [6, 2, 4]]
-  """
-  def hadamard_product(a, b) do
-    Enum.zip(a, b)
-    |> Enum.map(fn {x, y} -> hadamard_product_sub(x, y) end)
-  end
-
-  defp hadamard_product_sub(row_a, row_b) do
-    Enum.zip(row_a, row_b)
-    |> Enum.map(&Tuple.to_list(&1))
-    |> Enum.map(&Enum.reduce(&1, fn x, acc -> x * acc end))
-  end
-
-  @doc """
   Matrix subtraction
   ## Examples
       iex> MatrixOperation.subtract([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [3, 2, 2]])
@@ -474,6 +617,23 @@ defmodule MatrixOperation do
       |> Enum.map(&Tuple.to_list(&1))
       |> Enum.map(&Enum.reduce(&1, fn x, acc -> acc - x end))
     end)
+  end
+
+  @doc """
+  Hadamard product
+  ## Examples
+      iex> MatrixOperation.hadamard_product([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [3, 2, 2]])
+      [[6, 6, 3], [6, 2, 4]]
+  """
+  def hadamard_product(a, b) do
+    Enum.zip(a, b)
+    |> Enum.map(fn {x, y} -> hadamard_product_sub(x, y) end)
+  end
+
+  defp hadamard_product_sub(row_a, row_b) do
+    Enum.zip(row_a, row_b)
+    |> Enum.map(&Tuple.to_list(&1))
+    |> Enum.map(&Enum.reduce(&1, fn x, acc -> x * acc end))
   end
 
   @doc """
@@ -697,164 +857,6 @@ defmodule MatrixOperation do
     xt  = transpose(x)
     xtx = product(x, xt)
     const_multiple(1/length(xt), xtx)
-  end
-
-  @doc """
-    Leading principal minors are generetaed
-    #### Examples
-      iex> MatrixOperation.leading_principal_minor([[1, 3, 2], [2, 5, 1], [3, 4, 5]], 2)
-      [[1, 3], [2, 5]]
-    """
-  def leading_principal_minor(a, k) do
-    Enum.slice(a, 0, k)
-    |> Enum.map(& Enum.slice(&1, 0, k))
-  end
-
-  @doc """
-    LU decomposition
-    #### Examples
-      iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
-      [
-        L: [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
-        U: [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
-      ]
-    """
-  def lu_decomposition(a) do
-    row_column = row_column_matrix(a)
-    # check the setupufficient condition
-    check_number = lu_decomposition_check(a, row_column)
-    if(check_number == 0, do: nil, else: lu_decomposition_sub(a, 0, length(a), [], []))
-  end
-
-  defp lu_decomposition_check(_, [row_num, column_num]) when row_num != column_num do
-    nil
-  end
-
-  defp lu_decomposition_check(a, [row_num, _]) do
-    Enum.to_list(1..row_num)
-    |> Enum.map(& leading_principal_minor(a, &1) |> determinant)
-    |> Enum.reduce(fn x, acc -> x * acc end)
-  end
-
-  defp lu_decomposition_sub(a, k, len_a, _, _) when k == 0 do
-    u_matrix = even_matrix(len_a, len_a, 0)
-               |> exchange_one_row(1, hd(a))
-    inverce_u11 = 1.0 / hd(hd(u_matrix))
-    a_factor = transpose(a)
-               |> get_one_row(1)
-               |> Enum.slice(1, len_a)
-    l_row = [1] ++ hd(const_multiple(inverce_u11, [a_factor]))
-    l_matrix = even_matrix(len_a, len_a, 0)
-               |> exchange_one_row(1, l_row)
-    lu_decomposition_sub(a, k + 1, len_a, l_matrix, u_matrix)
-  end
-
-  defp lu_decomposition_sub(a, k, len_a, l_matrix, u_matrix) when k != len_a do
-    a_t = transpose(a)
-    u_solve = u_cal(a, k, len_a, l_matrix, u_matrix)
-    u_matrix_2 = exchange_one_row(u_matrix, k + 1, u_solve)
-    l_solve = l_cal(a_t, k, len_a, l_matrix, u_matrix_2)
-    l_matrix_2 = exchange_one_row(l_matrix, k + 1, l_solve)
-    lu_decomposition_sub(a, k + 1, len_a, l_matrix_2, u_matrix_2)
-  end
-
-  defp lu_decomposition_sub(_, _, _, l_matrix, u_matrix) do
-    ["L": transpose(l_matrix), "U": u_matrix]
-  end
-
-  defp l_cal(a_t, k, len_a, l_matrix, u_matrix) do
-    a_factor = Enum.at(a_t, k) |> Enum.slice(k + 1, len_a)
-    u_extract = transpose(u_matrix) |> Enum.at(k)
-    l_row = transpose(l_matrix)
-    |> Enum.slice(k + 1, len_a)
-    |> Enum.map(& inner_product(&1, u_extract))
-    |> Enum.zip(a_factor)
-    |> Enum.map(fn {x, y} -> y - x end)
-
-    inverce_uii = 1.0 / Enum.at(Enum.at(u_matrix, k), k)
-    [l_row_2] = const_multiple(inverce_uii, [l_row])
-    [1] ++ l_row_2
-    |> add_zero_element(0, k)
-  end
-
-  defp u_cal(a, k, len_a, l_matrix, u_matrix) do
-    a_factor = Enum.at(a, k) |> Enum.slice(k, len_a)
-    l_extract = transpose(l_matrix) |> Enum.at(k)
-    transpose(u_matrix)
-    |> Enum.slice(k, len_a)
-    |> Enum.map(& inner_product(&1, l_extract))
-    |> Enum.zip(a_factor)
-    |> Enum.map(fn {x, y} -> y - x end)
-    |> add_zero_element(0, k)
-  end
-
-  defp add_zero_element(list, init, fin) when init != fin do
-    add_zero_element([0] ++ list, init + 1, fin)
-  end
-
-  defp add_zero_element(list, _, _) do
-    list
-  end
-
-  @doc """
-  Linear equations are solved by LU decomposition.
-  ## Examples
-      iex> MatrixOperation.linear_equations_direct([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
-      [1.0, 0.0, 0.0]
-      iex> MatrixOperation.linear_equations_direct([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[3], [-7], [4]])
-      [2.0, -1.0, 1.0]
-  """
-  def linear_equations_direct(a, vertical_vec) do
-    # check the setupufficient condition
-    if determinant(a) == 0 do
-      nil
-    else
-      [t] = transpose(vertical_vec)
-      lu_decomposition_sub(a, t)
-    end
-  end
-
-  defp lu_decomposition_sub(a, t) do
-    ["L": l_matrix, "U": u_matrix] = lu_decomposition(a)
-    dim = length(l_matrix)
-    y = forward_substitution(l_matrix, t, [], 0, dim)
-    backward_substitution(u_matrix, y, [], dim, dim)
-  end
-
-  defp forward_substitution(l_matrix, t, _, k, dim) when k == 0 do
-    forward_substitution(l_matrix, t, [hd(t)], k + 1, dim)
-  end
-
-  defp forward_substitution(l_matrix, t, y, k, dim) when k != dim do
-    l_extract = Enum.at(l_matrix, k) |> Enum.slice(0, k)
-    y_extract = y |> Enum.slice(0, k)
-    ly = inner_product(l_extract, y_extract)
-    t_ly = Enum.at(t, k) - ly
-    forward_substitution(l_matrix, t, y ++ [t_ly], k + 1, dim)
-  end
-
-  defp forward_substitution(_, _, y, k, dim) when k == dim do
-    y
-  end
-
-  defp backward_substitution(u_matrix, y, _, k, dim) when k == dim do
-    dim_1 = dim - 1
-    y_n = Enum.at(y, dim_1)
-    u_nn = Enum.at(Enum.at(u_matrix, dim_1), dim_1)
-    backward_substitution(u_matrix, y, [y_n / u_nn], k - 1, dim)
-  end
-
-  defp backward_substitution(_, _, b, k, _) when k == 0 do
-    b
-  end
-
-  defp backward_substitution(u_matrix, y, b, k, dim) when k != dim do
-    k_1 = k - 1
-    u_extract = Enum.at(u_matrix, k_1) |> Enum.slice(k, dim)
-    lb = inner_product(u_extract, b)
-    inverce_uii = Enum.at(Enum.at(u_matrix, k_1), k_1)
-    t_lb = (Enum.at(y, k_1) - lb) / inverce_uii
-    backward_substitution(u_matrix, y, [t_lb] ++ b, k_1, dim)
   end
 
 end
