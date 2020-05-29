@@ -39,7 +39,7 @@ MatrixOperation.determinant([[1, 2, 1], [2, 1, 0], [1, 1, 2]])
 ```
 * Cramer's rule (to extract a specific solution of linear_equations)
 ```elixir
-MatrixOperation.cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[3], [-7], [4]], 0)
+MatrixOperation.cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[3], [-7], [4]], 1)
 2.0
 
 MatrixOperation.linear_equations_cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[3], [-7], [4]])
