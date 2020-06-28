@@ -689,7 +689,7 @@ defmodule MatrixOperation do
   end
 
   @doc """
-  eigenvalue [R^2/R^3 matrix]
+  eigenvalue [R^2×R^2/R^3×R^3 matrix]
   ## Examples
     iex> MatrixOperation.eigenvalue([[3, 1], [2, 2]])
     [4.0, 1.0]
@@ -802,6 +802,45 @@ defmodule MatrixOperation do
     re2 = r * :math.cos(atan(im / re) / n)
     im2 = r * :math.sin(atan(im / re) / n)
     [re2, im2]
+  end
+
+  @doc """
+    Matrix diagonalization [R^2×R^2/R^3×R^3 matrix]
+    #### Examples
+      iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
+      [[5.0, 0], [0, -2.0]]
+      iex> MatrixOperation.diagonalization([[1, 2, 3], [2, 1, 3], [3, 2, 1]])
+      [
+        [5.999999995559568, 0, 0],
+        [0, -2.000000031083018, 0],
+        [0, 0, -0.99999996447655]
+      ]
+    """
+  def diagonalization(a) do
+    eigenvalue(a)
+    |> diagonalization_condition
+  end
+
+  defp diagonalization_condition(a) when a == nil do
+    nil
+  end
+
+  defp diagonalization_condition(a) do
+    a
+    |> Enum.with_index
+    |> Enum.map(& diagonalization_sub(&1, length(a), 0, []))
+  end
+
+  defp diagonalization_sub(_, dim, i, row) when i + 1 > dim do
+    row
+  end
+
+  defp diagonalization_sub({ev, index}, dim, i, row) when i != index do
+    diagonalization_sub({ev, index}, dim, i + 1, row ++ [0])
+  end
+
+  defp diagonalization_sub({ev, index}, dim, i, row) when i == index do
+    diagonalization_sub({ev, index}, dim, i + 1, row ++ [ev])
   end
 
   @doc """
