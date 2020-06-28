@@ -124,6 +124,11 @@ MatrixOperation.tensor_product([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [2, 1, 2], [3
 MatrixOperation.eigenvalue([[6, -3], [4, -1]])
 [3.0, 2.0]
 ```
+* diagonalization (2×2 or 3×3 matrix)
+```elixir
+MatrixOperation.diagonalization([[1, 3], [4, 2]])
+[[5.0, 0], [0, -2.0]]
+```
 * Eigenvalue and eigenvector (Power iteration method for n×n matrix)
 ```elixir
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
