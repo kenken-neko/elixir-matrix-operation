@@ -129,6 +129,15 @@ MatrixOperation.eigenvalue([[6, -3], [4, -1]])
 MatrixOperation.diagonalization([[1, 3], [4, 2]])
 [[5.0, 0], [0, -2.0]]
 ```
+* Jordan normal form (2×2 or 3×3 matrix)
+```elixir
+MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
+[[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
+MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
+[[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
+MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
+[[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
+```
 * Eigenvalue and eigenvector (Power iteration method for n×n matrix)
 ```elixir
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
