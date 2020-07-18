@@ -16,7 +16,7 @@ You can install this package by adding this code to dependencies in your mix.exs
 ```elixir
 def deps do
   [
-    {:matrix_operation, "~> 0.2.0"}
+    {:matrix_operation, "~> 0.3.0"}
   ]
 end
 ```
@@ -128,6 +128,15 @@ MatrixOperation.eigenvalue([[6, -3], [4, -1]])
 ```elixir
 MatrixOperation.diagonalization([[1, 3], [4, 2]])
 [[5.0, 0], [0, -2.0]]
+```
+* Jordan normal form (2×2 or 3×3 matrix)
+```elixir
+MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
+[[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
+MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
+[[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
+MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
+[[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
 ```
 * Eigenvalue and eigenvector (Power iteration method for n×n matrix)
 ```elixir

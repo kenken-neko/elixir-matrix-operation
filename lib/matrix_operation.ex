@@ -697,8 +697,8 @@ defmodule MatrixOperation do
     [3.0, 2.0]
     iex> MatrixOperation.eigenvalue([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
     [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
-    iex> MatrixOperation.eigenvalue([[1, 2, 3], [2, 1, 3], [3, 2, 1]])
-    [5.999999995559568, -2.000000031083018, -0.99999996447655]
+    iex> MatrixOperation.eigenvalue([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+    [3.0000000027003626, 0, 0.9999999918989121]
   """
   # 2×2 algebra method
   def eigenvalue([[a11, a12], [a21, a22]]) do
@@ -710,12 +710,12 @@ defmodule MatrixOperation do
     a = -1
     b = a11 + a22 + a33
     c = a21 * a12 + a13 * a31 + a32 * a23 - a11 * a22 - a11 * a33 - a22 * a33
-
     d =
       a11 * a22 * a33 + a12 * a23 * a31 + a13 * a32 * a21 - a11 * a32 * a23 - a22 * a31 * a13 -
         a33 * a21 * a12
 
-    cubic_formula(a, b, c, d)
+    dis = -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d - 4 * b * b * b * d
+    if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
   end
 
   def eigenvalue(_a) do
@@ -763,6 +763,7 @@ defmodule MatrixOperation do
         0.5 * Enum.at(const_minus, 0) - 0.5 * root3 * Enum.at(const_minus, 1) - ba / 3
 
     [x1, x2, x3]
+    |> Enum.map(& zero_approximation(&1))
   end
 
   def cubic_formula_sub(x) when x < 0 do
@@ -793,8 +794,29 @@ defmodule MatrixOperation do
     s
   end
 
-  def csqrt([re, _im], _n) when re == 0 do
-    nil
+  def csqrt([re, im], _n) when re == 0 and im == 0 do
+    [0, 0]
+  end
+
+  def csqrt([re, im], n) when re == 0 and im > 0 do
+    r = :math.pow(im * im, 0.5 / n)
+    re2 = r * :math.pow(3, 0.5) * 0.5
+    im2 = r * 0.5
+    [re2, im2]
+  end
+
+  def csqrt([re, im], n) when re == 0 and im < 0 do
+    r = :math.pow(im * im, 0.5 / n)
+    re2 = r * :math.pow(3, 0.5) * 0.5
+    im2 = -r * 0.5
+    [re2, im2]
+  end
+
+  def csqrt([re, im], n) when re < 0 do
+    r = :math.pow(re * re + im * im, 0.5 / n)
+    re2 = -r * :math.cos(atan(im / re) / n)
+    im2 = r * :math.sin(atan(im / re) / n)
+    [re2, im2]
   end
 
   def csqrt([re, im], n) do
@@ -803,18 +825,22 @@ defmodule MatrixOperation do
     im2 = r * :math.sin(atan(im / re) / n)
     [re2, im2]
   end
+  # Due to a numerical calculation error
+  defp zero_approximation(delta) when delta < 0.000001 do
+    0
+  end
+
+  defp zero_approximation(delta) do
+    delta
+  end
 
   @doc """
     Matrix diagonalization [R^2×R^2/R^3×R^3 matrix]
     #### Examples
       iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
       [[5.0, 0], [0, -2.0]]
-      iex> MatrixOperation.diagonalization([[1, 2, 3], [2, 1, 3], [3, 2, 1]])
-      [
-        [5.999999995559568, 0, 0],
-        [0, -2.000000031083018, 0],
-        [0, 0, -0.99999996447655]
-      ]
+      iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+      [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
     """
   def diagonalization(a) do
     eigenvalue(a)
@@ -841,6 +867,154 @@ defmodule MatrixOperation do
 
   defp diagonalization_sub({ev, index}, dim, i, row) when i == index do
     diagonalization_sub({ev, index}, dim, i + 1, row ++ [ev])
+  end
+
+  @doc """
+    Jordan_normal_form [R^2×R^2/R^3×R^3 matrix]
+    #### Examples
+      iex> MatrixOperation.jordan_normal_form([[1, 3], [4, 2]])
+      [[5.0, 0], [0, -2.0]]
+      iex> MatrixOperation.jordan_normal_form([[7, 2], [-2, 3]])
+      [[5.0, 1], [0, 5.0]]
+      iex> MatrixOperation.jordan_normal_form([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+      [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
+      iex> MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
+      [[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
+      iex> MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
+      [[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
+      iex> MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
+      [[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
+      iex> MatrixOperation.jordan_normal_form([[6, 2, 3], [-3, 0, -2], [-4, -2, -1]])
+      [[1.0, 0, 0], [0, 2.0, 1], [0, 0, 2.0]]
+    """
+  # R^2×R^2 matrix
+  def jordan_normal_form([[m11, m12], [m21, m22]]) do
+    b = -m11 - m22
+    c = m11 * m22 - m12 * m21
+    jordan_R2R2(b, c, [[m11, m12], [m21, m22]])
+  end
+  # R^3×R^3 matrix
+  def jordan_normal_form([[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]]) do
+    b = m11 + m22 + m33
+    c = m21 * m12 + m13 * m31 + m32 * m23 - m11 * m22 - m11 * m33 - m22 * m33
+    d =
+      m11 * m22 * m33 + m12 * m23 * m31 + m13 * m32 * m21 - m11 * m32 * m23 - m22 * m31 * m13 -
+        m33 * m21 * m12
+    jordan_R3R3(b, c, d, [[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]])
+  end
+
+  def jordan_normal_form(_) do
+    nil
+  end
+
+  defp jordan_R2R2(b, c, m) when (b * b > 4 * c) do
+    diagonalization(m)
+  end
+
+  defp jordan_R2R2(b, c, m) when b * b == 4 * c do
+    m_lambda = subtract(m, [[-b * 0.5, 0], [0, -b * 0.5]])
+    max_jordan_dim = jordan_R2R2_sub(m_lambda, 1)
+    jordan_R2R2_sub2(b, max_jordan_dim)
+  end
+
+  defp jordan_R2R2(_, _, _) do
+    nil
+  end
+
+  defp jordan_R2R2_sub(ml, n) when ml != [[0, 0], [0, 0]] and n <= 2 do
+    product(ml, ml)
+    |> jordan_R2R2_sub(n + 1)
+  end
+
+  defp jordan_R2R2_sub(_, n) when n > 2 do
+    nil
+  end
+
+  defp jordan_R2R2_sub(_, n) do
+    n
+  end
+
+  defp jordan_R2R2_sub2(b, mjd) when mjd == 2 do
+    [[-b * 0.5, 1], [0, -b * 0.5]]
+  end
+
+  defp jordan_R2R2_sub2(b, mjd) when mjd == 1 do
+    [[-b * 0.5, 0], [0, -b * 0.5]]
+  end
+
+  defp jordan_R2R2_sub2(_, _) do
+    nil
+  end
+
+  defp jordan_R3R3(b, c, d, m)
+    when 4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
+           4 * b * b * b * d > 0 do
+    diagonalization(m)
+  end
+  # Triple root
+  defp jordan_R3R3(b, c, d, m)
+    when (4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
+           4 * b * b * b * d == 0) and (b * b == -3 * c and b * b * b == 27 * d) do
+    m_lambda = subtract(m, [[b/3, 0, 0], [0, b/3, 0], [0, 0, b/3]])
+    max_jordan_dim = jordan_R3R3_sub(m_lambda, 1)
+    jordan_R3R3_sub2(b, max_jordan_dim)
+  end
+  # Double root
+  defp jordan_R3R3(b, c, d, _)
+    when (4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
+           4 * b * b * b * d == 0) do
+    lambda = cubic_formula(-1, b, c, d)
+    jordan_R3R3_sub3(lambda)
+  end
+
+  defp jordan_R3R3(_, _, _, _) do
+    nil
+  end
+
+  defp jordan_R3R3_sub(ml, n) when ml != [[0, 0, 0], [0, 0, 0], [0, 0, 0]] and n < 3 do
+    product(ml, ml)
+    |> Enum.map(& Enum.map(&1, fn x -> zero_approximation(x) end))
+    |> jordan_R3R3_sub(n + 1)
+  end
+
+  defp jordan_R3R3_sub(_, n) when n > 3 do
+    nil
+  end
+
+  defp jordan_R3R3_sub(_, n) do
+    n
+  end
+
+  defp jordan_R3R3_sub2(b, mjd) when mjd == 3 do
+    [[b/3, 1, 0], [0, b/3, 1], [0, 0, b/3]]
+  end
+
+  defp jordan_R3R3_sub2(b, mjd) when mjd == 2 do
+    [[b/3, 1, 0], [0, b/3, 0], [0, 0, b/3]]
+  end
+
+  defp jordan_R3R3_sub2(b, mjd) when mjd == 1 do
+    [[b/3, 0, 0], [0, b/3, 0], [0, 0, b/3]]
+  end
+
+  defp jordan_R3R3_sub2(_, _) do
+    nil
+  end
+
+  defp jordan_R3R3_sub3([l1, l2, l3]) when l1 == l2 do
+    [[l1, 1, 0], [0, l2, 0], [0, 0, l3]]
+  end
+
+  defp jordan_R3R3_sub3([l1, l2, l3]) when l2 == l3 do
+    [[l1, 0, 0], [0, l2, 1], [0, 0, l3]]
+  end
+
+  defp jordan_R3R3_sub3([l1, l2, l3]) when l1 == l3 do
+    [[l1, 1, 0], [0, l3, 0], [0, 0, l2]]
+  end
+
+  defp jordan_R3R3_sub3(_) do
+    nil
   end
 
   @doc """
