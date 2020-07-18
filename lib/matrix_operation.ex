@@ -883,7 +883,7 @@ defmodule MatrixOperation do
       iex> MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
       [[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
       iex> MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
-      [[0.9999999999999999, 0, 0], [0, 0.9999999999999999, 0], [0, 0, 2.0]]
+      [[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
       iex> MatrixOperation.jordan_normal_form([[6, 2, 3], [-3, 0, -2], [-4, -2, -1]])
       [[1.0, 0, 0], [0, 2.0, 1], [0, 0, 2.0]]
     """
@@ -922,7 +922,6 @@ defmodule MatrixOperation do
   end
 
   defp jordan_R2R2_sub(ml, n) when ml != [[0, 0], [0, 0]] and n <= 2 do
-    IO.inspect(product(ml, ml))
     product(ml, ml)
     |> jordan_R2R2_sub(n + 1)
   end
@@ -972,8 +971,7 @@ defmodule MatrixOperation do
     nil
   end
 
-  defp jordan_R3R3_sub(ml, n) when ml != [[0, 0, 0], [0, 0, 0], [0, 0, 0]] and n <= 3 do
-    IO.inspect(product(ml, ml))
+  defp jordan_R3R3_sub(ml, n) when ml != [[0, 0, 0], [0, 0, 0], [0, 0, 0]] and n < 3 do
     product(ml, ml)
     |> Enum.map(& Enum.map(&1, fn x -> zero_approximation(x) end))
     |> jordan_R3R3_sub(n + 1)
