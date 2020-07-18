@@ -710,12 +710,12 @@ defmodule MatrixOperation do
     a = -1
     b = a11 + a22 + a33
     c = a21 * a12 + a13 * a31 + a32 * a23 - a11 * a22 - a11 * a33 - a22 * a33
-
     d =
       a11 * a22 * a33 + a12 * a23 * a31 + a13 * a32 * a21 - a11 * a32 * a23 - a22 * a31 * a13 -
         a33 * a21 * a12
 
-    cubic_formula(a, b, c, d)
+    dis = -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d - 4 * b * b * b * d
+    if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
   end
 
   def eigenvalue(_a) do
@@ -841,6 +841,166 @@ defmodule MatrixOperation do
 
   defp diagonalization_sub({ev, index}, dim, i, row) when i == index do
     diagonalization_sub({ev, index}, dim, i + 1, row ++ [ev])
+  end
+
+  @doc """
+    Jordan_normal_form [R^2×R^2/R^3×R^3 matrix]
+    #### Examples
+      iex> MatrixOperation.jordan_normal_form([[1, 3], [4, 2]])
+      [[5.0, 0], [0, -2.0]]
+      iex> MatrixOperation.jordan_normal_form([[7, 2], [-2, 3]])
+      [[5.0, 1], [0, 5.0]]
+      iex> MatrixOperation.jordan_normal_form([[1, 2, 3], [2, 1, 3], [3, 2, 1]])
+      [
+        [5.999999995559568, 0, 0],
+        [0, -2.000000031083018, 0],
+        [0, 0, -0.99999996447655]
+      ]
+      iex> MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
+      [[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
+      iex> MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
+      [[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
+      iex> MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
+      [[0.9999999999999999, 1, 0], [0, 0.9999999999999999, 0], [0, 0, 2.0]]
+    """
+  # R^2×R^2 matrix
+  def jordan_normal_form([[m11, m12], [m21, m22]]) do
+    b = -m11 - m22
+    c = m11 * m22 - m12 * m21
+    jordan_R2R2(b, c, [[m11, m12], [m21, m22]])
+  end
+  # R^3×R^3 matrix
+  def jordan_normal_form([[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]]) do
+    b = m11 + m22 + m33
+    c = m21 * m12 + m13 * m31 + m32 * m23 - m11 * m22 - m11 * m33 - m22 * m33
+    d =
+      m11 * m22 * m33 + m12 * m23 * m31 + m13 * m32 * m21 - m11 * m32 * m23 - m22 * m31 * m13 -
+        m33 * m21 * m12
+    jordan_R3R3(b, c, d, [[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]])
+  end
+
+  def jordan_normal_form(_) do
+    nil
+  end
+
+  defp jordan_R2R2(b, c, m) when (b * b > 4 * c) do
+    diagonalization(m)
+  end
+
+  defp jordan_R2R2(b, c, m) when b * b == 4 * c do
+    m_lambda = subtract(m, [[-b * 0.5, 0], [0, -b * 0.5]])
+    max_jordan_dim = jordan_R2R2_sub(m_lambda, 1)
+    jordan_R2R2_sub2(b, max_jordan_dim)
+  end
+
+  defp jordan_R2R2(_, _, _) do
+    nil
+  end
+
+  defp jordan_R2R2_sub(ml, n) when ml != [[0, 0], [0, 0]] and n <= 2 do
+    product(ml, ml)
+    |> jordan_R2R2_sub(n + 1)
+  end
+
+  defp jordan_R2R2_sub(_, n) when n > 2 do
+    nil
+  end
+
+  defp jordan_R2R2_sub(_, n) do
+    n
+  end
+
+  defp jordan_R2R2_sub2(b, mjd) when mjd == 2 do
+    [[-b * 0.5, 1], [0, -b * 0.5]]
+  end
+
+  defp jordan_R2R2_sub2(b, mjd) when mjd == 1 do
+    [[-b * 0.5, 0], [0, -b * 0.5]]
+  end
+
+  defp jordan_R2R2_sub2(_, _) do
+    nil
+  end
+
+  defp jordan_R3R3(b, c, d, m)
+    when 4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
+           4 * b * b * b * d > 0 do
+    diagonalization(m)
+  end
+  # Triple root
+  defp jordan_R3R3(b, c, d, m)
+    when (4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
+           4 * b * b * b * d == 0) and (b * b == -3 * c and b * b * b == 27 * d) do
+    m_lambda = subtract(m, [[b/3, 0, 0], [0, b/3, 0], [0, 0, b/3]])
+    max_jordan_dim = jordan_R3R3_sub(m_lambda, 1)
+    jordan_R3R3_sub2(b, max_jordan_dim)
+  end
+  # Double root
+  defp jordan_R3R3(b, c, d, m)
+    when (4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
+           4 * b * b * b * d == 0) do
+    [lambda_1, lambda_2, lambda_3] = cubic_formula(-1, b, c, d)
+    [double_root, single_root, max_jordan_dim] = jordan_R3R3_sub3(lambda_1, lambda_2, lambda_3, m)
+    if(max_jordan_dim == 2,
+        do: [[double_root, 1, 0], [0, double_root, 0], [0, 0, single_root]],
+        else: [[double_root, 0, 0], [0, double_root, 0], [0, 0, single_root]]
+    )
+  end
+
+  defp jordan_R3R3(_, _, _, _) do
+    nil
+  end
+
+  defp jordan_R3R3_sub(ml, n) when ml != [[0, 0, 0], [0, 0, 0], [0, 0, 0]] and n <= 3 do
+    IO.inspect(product(ml, ml))
+    product(ml, ml)
+    |> jordan_R3R3_sub(n + 1)
+  end
+
+  defp jordan_R3R3_sub(_, n) when n > 3 do
+    nil
+  end
+
+  defp jordan_R3R3_sub(_, n) do
+    n
+  end
+
+  defp jordan_R3R3_sub2(b, mjd) when mjd == 3 do
+    [[b/3, 1, 0], [0, b/3, 1], [0, 0, b/3]]
+  end
+
+  defp jordan_R3R3_sub2(b, mjd) when mjd == 2 do
+    [[b/3, 1, 0], [0, b/3, 0], [0, 0, b/3]]
+  end
+
+  defp jordan_R3R3_sub2(b, mjd) when mjd == 1 do
+    [[b/3, 0, 0], [0, b/3, 0], [0, 0, b/3]]
+  end
+
+  defp jordan_R3R3_sub2(_, _) do
+    nil
+  end
+
+  defp jordan_R3R3_sub3(l1, l2, l3, m) when l1 == l2 do
+    m_lambda = subtract(m, [[l1, 0, 0], [0, l2, 0], [0, 0, l3]])
+    max_jordan_dim = jordan_R3R3_sub(m_lambda, 1)
+    [l1, l3, max_jordan_dim]
+  end
+
+  defp jordan_R3R3_sub3(l1, l2, l3, m) when l2 == l3 do
+    m_lambda = subtract(m, [[l1, 0, 0], [0, l2, 0], [0, 0, l3]])
+    max_jordan_dim = jordan_R3R3_sub(m_lambda, 1)
+    [l2, l1, max_jordan_dim]
+  end
+
+  defp jordan_R3R3_sub3(l1, l2, l3, m) when l1 == l3 do
+    m_lambda = subtract(m, [[l1, 0, 0], [0, l2, 0], [0, 0, l3]])
+    max_jordan_dim = jordan_R3R3_sub(m_lambda, 1)
+    [l1, l2, max_jordan_dim]
+  end
+
+  defp jordan_R3R3_sub3(_, _, _, _) do
+    nil
   end
 
   @doc """
