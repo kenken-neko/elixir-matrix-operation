@@ -124,6 +124,13 @@ MatrixOperation.tensor_product([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [2, 1, 2], [3
 MatrixOperation.eigenvalue([[6, -3], [4, -1]])
 [3.0, 2.0]
 ```
+* Singular value (2×n or n×2 or 3×n or n×3 matrix)
+```elixir
+MatrixOperation.singular_value([[0, 1], [1, 0], [1, 0]])
+[1.4142135623730951, 1.0]
+MatrixOperation.singular_value([[2, 2, 2, 2], [1, -1, 1, -1], [-1, 1, -1, 1]])
+[4.0, 0.0, 2.8284271247461903]
+```
 * diagonalization (2×2 or 3×3 matrix)
 ```elixir
 MatrixOperation.diagonalization([[1, 3], [4, 2]])
@@ -143,6 +150,26 @@ MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
 [3.0, [1.0, -2.0, 2.0]]
 ```
+* Frobenius norm
+```elixir
+MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
+5.916079783099616
+```
+* One norm
+```elixir
+MatrixOperation.one_norm([[2, 3], [1, 4], [2, 1]])
+5
+```
+* Two norm
+```elixir
+MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
+5.674983803488142
+```
+* Max norm
+```elixir
+MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
+8
+```
 * Variance covariance matrix
 ```elixir
 MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
@@ -160,22 +187,22 @@ MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
 MatrixOperation.row_column_matrix([[3, 2, 3], [2, 1, 2]])
 [2, 3]
 ```
-* A n-th unit matrix is generated.
+* n-th unit matrix is generated.
 ```elixir
 MatrixOperation.unit_matrix(3)
 [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 ```
-* A n×m same element matrix is generated.
+* n×m same element matrix is generated.
 ```elixir
 MatrixOperation.even_matrix(3, 2, 1)
 [[1, 1], [1, 1], [1, 1]]
 ```
-* An element of a matrix is got. 
+* Element of a matrix is got. 
 ```elixir
 MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
 1
 ```
-* A row/column of a matrix is extracted. 
+* Row/Column of a matrix is extracted. 
 ```elixir
 MatrixOperation.get_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], 1)
 [1, 2, 3]
@@ -183,7 +210,7 @@ MatrixOperation.get_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], 1)
 MatrixOperation.get_one_column([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], 1)
 [1, 4, 7]
 ```
-* A row/column of a matrix is deleted.
+* Row/Column of a matrix is deleted.
 ```elixir
 MatrixOperation.delete_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3)
 [[1, 2, 3], [4, 5, 6]]
@@ -191,7 +218,7 @@ MatrixOperation.delete_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3)
 MatrixOperation.delete_one_column([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 2)
 [[1, 3], [4, 6], [7, 9]]
 ```
-* A row/column of a matrix is exchanged.
+* Row/Column of a matrix is exchanged.
 ```elixir
 MatrixOperation.exchange_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3, [1, 1, 1])
 [[1, 2, 3], [4, 5, 6], [1, 1, 1]]
