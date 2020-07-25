@@ -835,6 +835,35 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    Singular value [R^2×R^n(R^n×R^2)/R^3×R^n(R^n×R^3) matrix]
+    #### Examples
+      iex> MatrixOperation.singular_value([[1, 0, 0], [0, 1, 1]])
+      [1.4142135623730951, 1.0]
+      iex> MatrixOperation.singular_value([[0, 1], [1, 0], [1, 0]])
+      [1.4142135623730951, 1.0]
+      iex> MatrixOperation.singular_value([[2, 2, 2, 2], [1, -1, 1, -1], [-1, 1, -1, 1]])
+      [4.0, 0.0, 2.8284271247461903]
+    """
+  def singular_value(a) when length(a) == 2 or length(a) == 3 do
+    a_t = transpose(a)
+    singular_value_sub(a, a_t)
+    |> eigenvalue
+    |> Enum.map(& :math.pow(&1, 0.5))
+  end
+
+  def singular_value(_) do
+    nil
+  end
+
+  def singular_value_sub(a, a_t) when length(a) < length(a_t) do
+    product(a, a_t)
+  end
+
+  def singular_value_sub(a, a_t) do
+    product(a_t, a)
+  end
+
+  @doc """
     Matrix diagonalization [R^2×R^2/R^3×R^3 matrix]
     #### Examples
       iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
@@ -1055,6 +1084,66 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    Frobenius norm
+    #### Examples
+      iex> MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
+      5.916079783099616
+      iex> MatrixOperation.frobenius_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+      7.54983443527075
+    """
+  def frobenius_norm(a) do
+    a
+    |> Enum.map(& Enum.map(&1, fn x -> x * x end))
+    |> Enum.map(& Enum.sum(&1))
+    |> Enum.sum
+    |> :math.pow(0.5)
+  end
+
+  @doc """
+    one norm
+    #### Examples
+      iex> MatrixOperation.one_norm([[2, 3], [1, 4], [2, 1]])
+      5
+      iex> MatrixOperation.one_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+      7
+    """
+  def one_norm(a) do
+    a
+    |> Enum.map(& Enum.map(&1, fn x -> if(x > 0, do: x, else: -x) end))
+    |> Enum.map(& Enum.sum(&1))
+    |> Enum.max
+  end
+
+  @doc """
+    two norm
+    #### Examples
+      iex> MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
+      5.674983803488142
+      iex> MatrixOperation.two_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+      7.329546645915766
+    """
+  def two_norm(a) do
+    a
+    |> singular_value
+    |> Enum.max
+  end
+
+  @doc """
+    max norm
+    #### Examples
+      iex> MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
+      8
+      iex> MatrixOperation.max_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+      10
+    """
+  def max_norm(a) do
+    transpose(a)
+    |> Enum.map(& Enum.map(&1, fn x -> if(x > 0, do: x, else: -x) end))
+    |> Enum.map(& Enum.sum(&1))
+    |> Enum.max
+  end
+
+  @doc """
     A variance-covariance matrix is generated
     #### Examples
       iex> MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
@@ -1066,7 +1155,7 @@ defmodule MatrixOperation do
   def variance_covariance_matrix(data) do
     x = data
     |> transpose
-    |> Enum.map(&Enum.map(&1, fn x -> x - Enum.sum(&1)/length(&1) end))
+    |> Enum.map(& Enum.map(&1, fn x -> x - Enum.sum(&1)/length(&1) end))
     xt  = transpose(x)
     xtx = product(x, xt)
     const_multiple(1/length(xt), xtx)
