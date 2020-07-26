@@ -1,6 +1,6 @@
 # elixir-matrix-operation
 Matrix operation library in Elixir.  
-It is described the brief explanation (explanation.pdf) for a mathematical description.
+It is described the brief explanation (numerical_formula.pdf) for a mathematical description.
 
 ## Notice
 The column and row numbers are specified by a integer from 1 (not from 0).
