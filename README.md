@@ -1,6 +1,6 @@
 # elixir-matrix-operation
 Matrix operation library in Elixir.  
-It is described the brief explanation (explanation.pdf) for a mathematical description.
+It is described the brief explanation (numerical_formula.pdf) for a mathematical description.
 
 ## Notice
 The column and row numbers are specified by a integer from 1 (not from 0).
@@ -155,12 +155,12 @@ MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
 MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
 5.916079783099616
 ```
-* L one norm (L^1 norm)
+* L one norm (L_1 norm)
 ```elixir
 MatrixOperation.one_norm([[2, 3], [1, 4], [2, 1]])
 5
 ```
-* L two norm (L^2 norm)
+* L two norm (L_2 norm)
 ```elixir
 MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
 5.674983803488142
