@@ -148,7 +148,10 @@ MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
 * Eigenvalue and eigenvector (Power iteration method for n×n matrix)
 ```elixir
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
-[3.0, [1.0, -2.0, 2.0]]
+[
+  max_eigen_value: 3.0,
+  max_eigen_vector: [1.0, -2.0, 2.0]
+]
 ```
 * Frobenius norm
 ```elixir
