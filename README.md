@@ -49,8 +49,8 @@ MatrixOperation.linear_equations_cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[
 ```elixir
 MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
 [
-    L: [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
-    U: [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
+    [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
+    [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
 ]
 ```
 * Direct method (to solve linear_equations)
@@ -149,8 +149,8 @@ MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
 ```elixir
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
 [
-  max_eigen_value: 3.0,
-  max_eigen_vector: [1.0, -2.0, 2.0]
+  3.0,
+  [1.0, -2.0, 2.0]
 ]
 ```
 * Frobenius norm
