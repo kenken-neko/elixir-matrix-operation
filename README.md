@@ -145,7 +145,7 @@ MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
 MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
 [[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
 ```
-* Eigenvalue and eigenvector (Power iteration method for n×n matrix)
+* Eigenvalue and eigenvector (Power iteration method to solve maximum eigenvalue and eigenvector of n-th eigen equation)
 ```elixir
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
 [
@@ -153,6 +153,20 @@ MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
   [1.0, -2.0, 2.0]
 ]
 ```
+The second argument (ex. 100) is max iterate number.
+* Jacobi method (Iteration method to solve n-th eigen equation)
+```elixir
+MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
+[
+  [11.827601654846498, 3.5956497715829547, -0.4232514264294592],
+  [
+    [0.8892913734834387, -0.41794841208075917, -0.1856878506717961],
+    [0.4229077692904142, 0.9060645461356799, -0.014002032343986153],
+    [0.17409730532592232, -0.06607694813719736, 0.982509015329186]
+  ]
+]
+```
+The second argument (ex. 100) is max iterate number.
 * Frobenius norm
 ```elixir
 MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
