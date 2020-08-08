@@ -422,7 +422,7 @@ defmodule MatrixOperation do
   end
 
   defp lu_decomposition_sub(a, t) do
-    ["L": l_matrix, "U": u_matrix] = lu_decomposition(a)
+    [l_matrix, u_matrix] = lu_decomposition(a)
     dim = length(l_matrix)
     y = forward_substitution(l_matrix, t, [], 0, dim)
     backward_substitution(u_matrix, y, [], dim, dim)
@@ -875,14 +875,7 @@ defmodule MatrixOperation do
           [0.17409730532592232, -0.06607694813719736, 0.982509015329186]
         ]
       ]
-      iex> t = [
-                [1, 2, 1, 4, 1, 7],
-                [2, 12, -3, -2, 2, 6],
-                [1, -3, -24, 2, 3, 5],
-                [4, -2, 2, 20, 4, 4],
-                [1, 2, 3, 4, 5, 3],
-                [7, 6, 5, 4, 3, 2]
-              ]
+      iex> t = [[1, 2, 1, 4, 1, 7], [2, 12, -3, -2, 2, 6], [1, -3, -24, 2, 3, 5], [4, -2, 2, 20, 4, 4], [1, 2, 3, 4, 5, 3], [7, 6, 5, 4, 3, 2]]
       iex> MatrixOperation.jacobi(t, 100)
       [
         [-5.647472222154288, 16.10756956860111, -25.213050737620225,
