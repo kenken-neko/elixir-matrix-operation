@@ -826,7 +826,7 @@ defmodule MatrixOperation do
     [re2, im2]
   end
   # Due to a numerical calculation error
-  defp zero_approximation(delta) when delta < 0.000001 do
+  defp zero_approximation(delta) when abs(delta) < 0.000001 do
     0
   end
 
@@ -1096,41 +1096,21 @@ defmodule MatrixOperation do
       [
         [11.827601654846498, 3.5956497715829547, -0.4232514264294592],
         [
-          [0.8892913734834387, -0.41794841208075917, -0.1856878506717961],
-          [0.4229077692904142, 0.9060645461356799, -0.014002032343986153],
-          [0.17409730532592232, -0.06607694813719736, 0.982509015329186]
-        ]
-      ]
-      iex> t = [[1, 2, 1, 4, 1, 7], [2, 12, -3, -2, 2, 6], [1, -3, -24, 2, 3, 5], [4, -2, 2, 20, 4, 4], [1, 2, 3, 4, 5, 3], [7, 6, 5, 4, 3, 2]]
-      iex> MatrixOperation.jacobi(t, 100)
-      [
-        [-5.647472222154288, 16.10756956860111, -25.213050737620225,
-         23.986062747341943, 3.603942386333613, 3.16294825749784],
-        [
-          [0.6449541438709365, 0.08897140069991567, -0.026192657405464854,
-           0.05163343850125703, 0.01568580438874953, 0.7566505999657069],
-          [0.4232386493318106, 0.6909984549307501, -0.038090198699433024,
-           0.24716097119044886, -0.27246393584617756, -0.4545483205793889],
-          [-0.054824510579749394, 0.09094816278994006, 0.9803596620468104,
-           0.1487143331839206, 0.0450950091063361, 0.05889078888629876],
-          [0.051059870510282886, -0.4418461550871184, -0.07949120090733841,
-           0.8782356989510843, -0.1480834261392788, -0.051179779476524544],
-          [0.32768189739311615, -0.07147053098422909, -0.010030842359243737,
-           0.07718064910083589, 0.8913112676999708, -0.29499710337338614],
-          [-0.5402915276029262, 0.5531704938457161, -0.17417963621621968,
-           0.3699658010501359, 0.3272908833614415, 0.3574281857777802]
+          [0.8892852869407288, -0.4276185412198255, -0.16221609548924776],
+          [0.4179455612966035, 0.903858138554591, -0.0914438251665857],
+          [0.18572341323379965, 0.013522151221627799, 0.982509015329186]
         ]
       ]
     """
   def jacobi(a, loop_num) do
     [pap, p] = jacobi_loop(a, loop_num, 0, unit_matrix(length(a)))
+    p_rnd = Enum.map(p, & Enum.map(&1, fn x -> zero_approximation(x) end))
+
     eigenvalue_list = pap
     |> Enum.with_index
     |> Enum.map(& jacobi_sub4(&1))
-    [
-      eigenvalue_list,
-      p
-    ]
+    |> Enum.map(& zero_approximation(&1))
+    [eigenvalue_list, p_rnd]
   end
 
   defp jacobi_loop(a, loop_num, l, p_pre) when l != loop_num do
@@ -1145,12 +1125,10 @@ defmodule MatrixOperation do
     a_ij = get_one_element(a, [max_i + 1, max_j + 1])
     a_ii = get_one_element(a, [max_i + 1, max_i + 1])
     a_jj = get_one_element(a, [max_j + 1, max_j + 1])
-    a_phi = -2 * a_ij / (a_ii - a_jj)
-    phi = atan(a_phi) * 0.5
+    phi = phi_if(a_ii - a_jj, a_ij)
 
     p = jacobi_sub3(phi, column_num, max_i, max_j, 0, 0, [], [])
-    p_pi = product(p, p_pre)
-
+    p_pi = product(p_pre, p)
     p
     |> transpose
     |> product(a)
@@ -1160,6 +1138,18 @@ defmodule MatrixOperation do
 
   defp jacobi_loop(a, _, _, p) do
     [a, p]
+  end
+
+  defp phi_if(denominator, a_ij) when denominator < 0.0000001 and a_ij > 0 do
+    -0.78539816339 # -pi/2
+  end
+
+  defp phi_if(denominator, a_ij) when denominator < 0.0000001 and a_ij < 0 do
+    0.78539816339 # -pi/2
+  end
+
+  defp phi_if(denominator, a_ij) do
+    atan(-2 * a_ij / denominator) * 0.5
   end
 
   defp off_diagonal_terms(m, row_num, column_num, i, j, output) when i < j and row_num >= i and column_num > j do
@@ -1196,7 +1186,7 @@ defmodule MatrixOperation do
     jocobi_sub2(idx, column_num, i + 1)
   end
 
-  defp jacobi_sub3(phi, column_num, target_i, target_j, i, j, o_row, output) when i == j and ( i == target_i or i == target_j) do
+  defp jacobi_sub3(phi, column_num, target_i, target_j, i, j, o_row, output) when i == j and ( i == target_i or j == target_j) do
     jacobi_sub3(phi, column_num, target_i, target_j, i, j + 1, o_row ++ [:math.cos(phi)], output)
   end
 
@@ -1212,11 +1202,11 @@ defmodule MatrixOperation do
     jacobi_sub3(phi, column_num, target_i, target_j, i, j + 1, o_row ++ [:math.sin(-phi)], output)
   end
 
-  defp jacobi_sub3(phi, column_num, target_i, target_j, i, j, o_row, output) when i == j and j != column_num do
+  defp jacobi_sub3(phi, column_num, target_i, target_j, i, j, o_row, output) when (i != target_i or j != target_j) and i == j and j != column_num do
     jacobi_sub3(phi, column_num, target_i, target_j, i, j + 1, o_row ++ [1], output)
   end
 
-  defp jacobi_sub3(phi, column_num, target_i, target_j, i, j, o_row, output) when (i != target_i or j != target_j) and j == column_num and i != j do
+  defp jacobi_sub3(phi, column_num, target_i, target_j, i, j, o_row, output) when (i != target_i or j != target_j) and i != j and j == column_num do
     jacobi_sub3(phi, column_num, target_i, target_j, i + 1, 0, [], output ++ [o_row])
   end
 
@@ -1230,6 +1220,51 @@ defmodule MatrixOperation do
 
   defp jacobi_sub4({list, index}) do
     Enum.at(list, index)
+  end
+
+  @doc """
+    Singular Value Decomposition (SVD)
+    #### Examples
+      iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
+      [
+        [1.0, 1.4142135623730951],
+        [[1.0, 0], [0, 1.0]],
+        [
+          [1.0, 0, 0],
+          [0, 0.7071067458364744, -0.707106816536619],
+          [0, 0.707106816536619, 0.7071067458364744]
+        ]
+      ]
+    """
+  def svd(a, loop_num) do
+    a_t = transpose(a)
+    svd_sub(a, a_t, loop_num)
+  end
+
+  def svd_sub(a, a_t, loop_num) when length(a) <= length(a_t) do
+    # U matrix
+    aat = product(a, a_t)
+    [sv_sq, u] = jacobi(aat, loop_num)
+    # V matirx
+    ata = product(a_t, a)
+    [_, v] = jacobi(ata, loop_num)
+    # Singular value
+    s = Enum.map(sv_sq, & :math.sqrt(&1))
+    # A = USV^t
+    [s, u, v]
+  end
+
+  def svd_sub(a, a_t, loop_num) do
+    # U matrix
+    aat = product(a, a_t)
+    [_, u] = jacobi(aat, loop_num)
+    # V matirx
+    ata = product(a_t, a)
+    [sv_sq, v] = jacobi(ata, loop_num)
+    # Singular value
+    s = Enum.map(sv_sq, & :math.sqrt(&1))
+    # A = USV^t
+    [s, u, v]
   end
 
   @doc """
