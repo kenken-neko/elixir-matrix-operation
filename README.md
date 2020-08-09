@@ -167,6 +167,19 @@ MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
 ]
 ```
 The second argument (ex. 100) is max iterate number.
+* Singular Value Decomposition (by using Jacobi method)
+```elixir
+MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
+[
+  [11.827601654846498, 3.5956497715829547, -0.4232514264294592],
+  [
+    [0.8892852869407288, -0.4276185412198255, -0.16221609548924776],
+    [0.4179455612966035, 0.903858138554591, -0.0914438251665857],
+    [0.18572341323379965, 0.013522151221627799, 0.982509015329186]
+  ]
+]
+```
+The second argument (ex. 100) is max iterate number.
 * Frobenius norm
 ```elixir
 MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
