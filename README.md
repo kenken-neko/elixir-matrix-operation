@@ -16,7 +16,7 @@ You can install this package by adding this code to dependencies in your mix.exs
 ```elixir
 def deps do
   [
-    {:matrix_operation, "~> 0.3.0"}
+    {:matrix_operation, "~> 0.3.3"}
   ]
 end
 ```
@@ -49,8 +49,8 @@ MatrixOperation.linear_equations_cramer([[0, -2, 1], [-1, 1, -4], [3, 3, 1]], [[
 ```elixir
 MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
 [
-    L: [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
-    U: [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
+    [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
+    [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
 ]
 ```
 * Direct method (to solve linear_equations)
@@ -145,11 +145,42 @@ MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
 MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
 [[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
 ```
-* Eigenvalue and eigenvector (Power iteration method for n×n matrix)
+* Eigenvalue and eigenvector (Power iteration method to solve maximum eigenvalue and eigenvector of n-th eigen equation)
 ```elixir
 MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
-[3.0, [1.0, -2.0, 2.0]]
+[
+  3.0,
+  [1.0, -2.0, 2.0]
+]
 ```
+The second argument (ex. 100) is max iterate number.
+* Eigenvalue and eigenvector (Jacobi method to solve n-th eigen equation)
+```elixir
+MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
+[
+  [11.827601656659317, 3.5956497715829547, -0.42325142824210527],
+  [
+    [0.8892872578006493, -0.42761854121982545, -0.16220529066103917],
+    [0.4179466723082325, 0.9038581385545962, -0.09143874712126684],
+    [0.1857114757355589, 0.013522151221627882, 0.982511271796136]
+  ]
+]
+```
+The second argument (ex. 100) is max iterate number.
+* Singular Value Decomposition (by using Jacobi method)
+```elixir
+MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
+[
+  [1.0, 1.4142135623730951],
+  [[1.0, 0], [0, 1.0]],
+  [
+    [1.0, 0, 0],
+    [0, 0.7071067458364744, -0.707106816536619],
+    [0, 0.707106816536619, 0.7071067458364744]
+  ]
+]
+```
+The second argument (ex. 100) is max iterate number.
 * Frobenius norm
 ```elixir
 MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
