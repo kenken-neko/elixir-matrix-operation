@@ -153,6 +153,34 @@ defmodule MatrixOperation do
   end
 
   @doc """
+  Calculate the rank of a matrix by using Jacobi method
+  ## Examples
+      iex> MatrixOperation.rank([[2, 3, 4], [1, 4, 2], [2, 1, 4]], 100)
+      2
+      iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
+      3
+  """
+  def rank(matrix, loop_num) do
+    [sv, _, _] = svd(matrix, loop_num)
+    count_finite_values(sv)
+  end
+
+  # Count finite values
+  defp count_finite_values(a) when is_list(a) do
+    a 
+    |> Enum.map(&count_finite_values(&1))
+    |> Enum.sum
+  end
+
+  defp count_finite_values(a) when is_number(a) and a == 0 do
+    0
+  end
+
+  defp count_finite_values(a) when is_number(a) do
+    1
+  end
+
+  @doc """
   Transpose of a matrix
   ## Examples
       iex> MatrixOperation.transpose([[1.0, 2.0], [3.0, 4.0]])
@@ -1090,7 +1118,7 @@ defmodule MatrixOperation do
   end
 
   @doc """
-    Singular Value Decomposition (SVD)
+    Calculate eigenvalue and eigenvector by using Jacobi method
     #### Examples
       iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
       [
@@ -1224,7 +1252,7 @@ defmodule MatrixOperation do
   end
 
   @doc """
-    Singular Value Decomposition (SVD)
+    Singular Value Decomposition (SVD) by using Jacobi method
     #### Examples
       iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
       [
