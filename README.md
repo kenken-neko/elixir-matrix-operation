@@ -16,7 +16,7 @@ You can install this package by adding this code to dependencies in your mix.exs
 ```elixir
 def deps do
   [
-    {:matrix_operation, "~> 0.3.3"}
+    {:matrix_operation, "~> 0.3.4"}
   ]
 end
 ```
@@ -201,13 +201,16 @@ MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
 MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
 8
 ```
+* Rank (by Jacobi method)
+```elixir
+MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
+8
+```
+The second argument (ex. 100) is max iterate number for Jacobi method.
 * Variance covariance matrix
 ```elixir
-MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
-[
-    [466.66666666666663, 166.66666666666666],
-    [166.66666666666666, 66.66666666666666]
-]
+MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
+3
 ```
 
     
