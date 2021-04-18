@@ -201,7 +201,7 @@ MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
 MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
 8
 ```
-* Rank (by Jacobi method)
+* Rank
 ```elixir
 MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
 3
