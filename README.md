@@ -154,7 +154,7 @@ MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
 ]
 ```
 The second argument (ex. 100) is max iterate number.
-* Eigenvalue and eigenvector (Jacobi method to solve n-th eigen equation)
+* Eigenvalue and eigenvector of R^n symmetric matrix by using Jacobi method
 ```elixir
 MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
 [
