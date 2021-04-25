@@ -1385,14 +1385,14 @@ defmodule MatrixOperation do
     |> Enum.zip(y) 
     |> Enum.map(fn {elem_x, elem_y} -> elem_x - elem_y end)
 
-    x_y_norm = x_y
-    |> Enum.map(& &1*&1)
+    const = x_y
+    |> Enum.map(& &1 * &1)
     |> Enum.sum
 
     x_y_matrix = [x_y]
     x_y_matrix_t = transpose(x_y_matrix)
     temp_matrix = product(x_y_matrix_t, x_y_matrix)
-    temp_matrix_2 = const_multiple(2/x_y_norm, temp_matrix)
+    temp_matrix_2 = const_multiple(2/const, temp_matrix)
 
     length(x)
     |> unit_matrix
@@ -1401,6 +1401,41 @@ defmodule MatrixOperation do
 
   def make_householder_matrix(_, _) do
     nil
+  end
+
+  defp make_householder_matrix_for_qr(column) do
+    column_norm = column
+    |> Enum.map(& &1 * &1)
+    |> Enum.sum
+    |> :math.sqrt
+
+    [head | tail] = column
+    head_2 = if(head >= 0, do: head + column_norm, else: head - column_norm)
+    v = [head_2 | tail]
+
+    head_3 = if(head >= 0, do: column_norm + head, else: column_norm - head)
+    v_matrix = [v]
+    v_matrix_t = transpose(v_matrix)
+    temp_matrix = product(v_matrix_t, v_matrix)
+    temp_matrix_2 = const_multiple(1/(column_norm * head_3), temp_matrix) 
+
+    length(column)
+    |> unit_matrix
+    |> subtract(temp_matrix_2)  
+  end
+
+  @doc """
+    QR decomposition
+    #### Examples
+      iex> MatrixOperation.qr([[2, 1], [1, 3]])
+      [
+        [-0.8944271909999157, -0.4472135954999579],
+        [-0.4472135954999579, 0.8944271909999159]
+      ]
+    """
+  def qr(a) do
+    column = get_one_column(a, 1)
+    make_householder_matrix_for_qr(column)
   end
 
 end
