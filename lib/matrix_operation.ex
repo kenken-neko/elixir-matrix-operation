@@ -1374,4 +1374,33 @@ defmodule MatrixOperation do
     const_multiple(1/length(xt), xtx)
   end
 
+  @doc """
+    Householder transformation
+    #### Examples
+      iex> MatrixOperation.make_householder_matrix([1, 0], [0, -1])
+      [[0.0, -1.0], [-1.0, 0.0]]
+    """
+  def make_householder_matrix(x, y) when is_list(x) and is_list(y) and length(x) == length(y) do
+    x_y = x
+    |> Enum.zip(y) 
+    |> Enum.map(fn {elem_x, elem_y} -> elem_x - elem_y end)
+
+    x_y_norm = x_y
+    |> Enum.map(& &1*&1)
+    |> Enum.sum
+
+    x_y_matrix = [x_y]
+    x_y_matrix_t = transpose(x_y_matrix)
+    temp_matrix = product(x_y_matrix_t, x_y_matrix)
+    temp_matrix_2 = const_multiple(2/x_y_norm, temp_matrix)
+
+    length(x)
+    |> unit_matrix
+    |> subtract(temp_matrix_2)
+  end
+
+  def make_householder_matrix(_, _) do
+    nil
+  end
+
 end
