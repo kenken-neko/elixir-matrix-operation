@@ -209,7 +209,7 @@ MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
 MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
 3
 ```
-The second argument (ex. 100) is max iterate number for Jacobi method.
+The second argument (ex. 100) is max iterate number for QR decomposition.
 * Variance covariance matrix
 ```elixir
 MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
