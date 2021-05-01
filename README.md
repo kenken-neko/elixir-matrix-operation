@@ -197,7 +197,7 @@ MatrixOperation.one_norm([[2, 3], [1, 4], [2, 1]])
 * L two norm (L_2 norm)
 ```elixir
 MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
-5.674983803488142
+5.674983803488139
 ```
 * Max norm
 ```elixir
