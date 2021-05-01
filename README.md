@@ -16,7 +16,7 @@ You can install this package by adding this code to dependencies in your mix.exs
 ```elixir
 def deps do
   [
-    {:matrix_operation, "~> 0.3.4"}
+    {:matrix_operation, "~> 0.3.5"}
   ]
 end
 ```
@@ -119,22 +119,15 @@ MatrixOperation.tensor_product([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [2, 1, 2], [3
     ]
 ]
 ```
-* Eigenvalue (Algebraic method for 2×2 or 3×3 matrix)
+* Calculate eigenvalue by the direct method (Algebraic method for 2×2 or 3×3 matrix)
 ```elixir
-MatrixOperation.eigenvalue([[6, -3], [4, -1]])
+MatrixOperation.eigenvalue_direct([[6, -3], [4, -1]])
 [3.0, 2.0]
 ```
-* Singular value (2×n or n×2 or 3×n or n×3 matrix)
+* Singular value by QR decomposition
 ```elixir
-MatrixOperation.singular_value([[0, 1], [1, 0], [1, 0]])
-[1.4142135623730951, 1.0]
-MatrixOperation.singular_value([[2, 2, 2, 2], [1, -1, 1, -1], [-1, 1, -1, 1]])
-[4.0, 0.0, 2.8284271247461903]
-```
-* diagonalization (2×2 or 3×3 matrix)
-```elixir
-MatrixOperation.diagonalization([[1, 3], [4, 2]])
-[[5.0, 0], [0, -2.0]]
+MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]], 100)
+[14.912172620559879, 4.236463407782015, 1.6369134152873956, 0.0]
 ```
 * Jordan normal form (2×2 or 3×3 matrix)
 ```elixir
@@ -179,6 +172,16 @@ MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
     [0, 0.707106816536619, 0.7071067458364744]
   ]
 ]
+```
+* Calculate eigenvalue by QR decomposition
+```elixir
+MatrixOperation.eigenvalue([[6, 1, 1, 1], [1, 7, 1, 1], [1, 1, 8, 1], [1, 1, 1, 9]], 100)
+[10.803886359051251, 7.507748705362773, 6.39227529027387, 5.296089645312106]
+```
+* diagonalization  by QR decomposition
+```elixir
+MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
+[[5.000000000000018, 0], [0, -1.999999999999997]]
 ```
 The second argument (ex. 100) is max iterate number.
 * Frobenius norm
