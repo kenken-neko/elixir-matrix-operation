@@ -152,19 +152,6 @@ defmodule MatrixOperation do
     |> transpose
   end
 
-  @doc """
-  Calculate the rank of a matrix by using Jacobi method
-  ## Examples
-      iex> MatrixOperation.rank([[2, 3, 4], [1, 4, 2], [2, 1, 4]], 100)
-      2
-      iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
-      3
-  """
-  def rank(matrix, loop_num) do
-    [sv, _, _] = svd(matrix, loop_num)
-    count_finite_values(sv)
-  end
-
   # Count finite values
   defp count_finite_values(a) when is_list(a) do
     a 
@@ -717,24 +704,24 @@ defmodule MatrixOperation do
   end
 
   @doc """
-  eigenvalue [R^2×R^2/R^3×R^3 matrix]
+  eigenvalue by the direct method [R^2×R^2/R^3×R^3 matrix]
   ## Examples
-    iex> MatrixOperation.eigenvalue([[3, 1], [2, 2]])
+    iex> MatrixOperation.eigenvalue_direct([[3, 1], [2, 2]])
     [4.0, 1.0]
-    iex> MatrixOperation.eigenvalue([[6, -3], [4, -1]])
+    iex> MatrixOperation.eigenvalue_direct([[6, -3], [4, -1]])
     [3.0, 2.0]
-    iex> MatrixOperation.eigenvalue([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
+    iex> MatrixOperation.eigenvalue_direct([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
     [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
-    iex> MatrixOperation.eigenvalue([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+    iex> MatrixOperation.eigenvalue_direct([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
     [3.0000000027003626, 0, 0.9999999918989121]
   """
   # 2×2 algebra method
-  def eigenvalue([[a11, a12], [a21, a22]]) do
+  def eigenvalue_direct([[a11, a12], [a21, a22]]) do
     quadratic_formula(1, -a11 - a22, a11 * a22 - a12 * a21)
   end
 
   # 3×3 algebratic method
-  def eigenvalue([[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]) do
+  def eigenvalue_direct([[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]) do
     a = -1
     b = a11 + a22 + a33
     c = a21 * a12 + a13 * a31 + a32 * a23 - a11 * a22 - a11 * a33 - a22 * a33
@@ -746,7 +733,7 @@ defmodule MatrixOperation do
     if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
   end
 
-  def eigenvalue(_a) do
+  def eigenvalue_direct(_a) do
     "2×2 or 3×3 matrix only"
   end
 
@@ -763,13 +750,13 @@ defmodule MatrixOperation do
     [0.5 * (-b + d) / a, 0.5 * (-b - d) / a]
   end
 
-  def cubic_formula(a, b, c, d)
+  defp cubic_formula(a, b, c, d)
       when -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d -
              4 * b * b * b * d < 0 do
     nil
   end
 
-  def cubic_formula(a, b, c, d) do
+  defp cubic_formula(a, b, c, d) do
     ba = b / a
     ca = c / a
     da = d / a
@@ -794,65 +781,66 @@ defmodule MatrixOperation do
     |> Enum.map(& zero_approximation(&1))
   end
 
-  def cubic_formula_sub(x) when x < 0 do
+  defp cubic_formula_sub(x) when x < 0 do
     [0, :math.sqrt(-x)]
   end
 
-  def cubic_formula_sub(x) do
+  defp cubic_formula_sub(x) do
     [:math.sqrt(x), 0]
   end
 
-  def atan(x) when x < 0 do
+  defp atan(x) when x < 0 do
     y = atan(-x)
     -1 * y
   end
 
-  def atan(x) do
+  defp atan(x) do
     atan_sub(x, 0, 0)
   end
 
-  def atan_sub(x, z, s) when z < x do
+  defp atan_sub(x, z, s) when z < x do
     del = 0.0000001
     z = z + del
     s = s + del / (z * z + 1)
     atan_sub(x, z, s)
   end
 
-  def atan_sub(_, _, s) do
+  defp atan_sub(_, _, s) do
     s
   end
 
-  def csqrt([re, im], _n) when re == 0 and im == 0 do
+  defp csqrt([re, im], _n) when re == 0 and im == 0 do
     [0, 0]
   end
 
-  def csqrt([re, im], n) when re == 0 and im > 0 do
+  defp csqrt([re, im], n) when re == 0 and im > 0 do
     r = :math.pow(im * im, 0.5 / n)
     re2 = r * :math.pow(3, 0.5) * 0.5
     im2 = r * 0.5
     [re2, im2]
   end
 
-  def csqrt([re, im], n) when re == 0 and im < 0 do
+  defp csqrt([re, im], n) when re == 0 and im < 0 do
     r = :math.pow(im * im, 0.5 / n)
     re2 = r * :math.pow(3, 0.5) * 0.5
     im2 = -r * 0.5
     [re2, im2]
   end
 
-  def csqrt([re, im], n) when re < 0 do
+  defp csqrt([re, im], n) when re < 0 do
     r = :math.pow(re * re + im * im, 0.5 / n)
     re2 = -r * :math.cos(atan(im / re) / n)
     im2 = r * :math.sin(atan(im / re) / n)
     [re2, im2]
   end
 
-  def csqrt([re, im], n) do
+  defp csqrt([re, im], n) do
     r = :math.pow(re * re + im * im, 0.5 / n)
     re2 = r * :math.cos(atan(im / re) / n)
     im2 = r * :math.sin(atan(im / re) / n)
     [re2, im2]
   end
+
   # Due to a numerical calculation error
   defp zero_approximation(delta) when abs(delta) < 0.000001 do
     0
@@ -863,67 +851,38 @@ defmodule MatrixOperation do
   end
 
   @doc """
-    Singular value [R^2×R^n(R^n×R^2)/R^3×R^n(R^n×R^3) matrix]
+    Matrix diagonalization by the direct method [R^2×R^2/R^3×R^3 matrix]
     #### Examples
-      iex> MatrixOperation.singular_value([[1, 0, 0], [0, 1, 1]])
-      [1.4142135623730951, 1.0]
-      iex> MatrixOperation.singular_value([[0, 1], [1, 0], [1, 0]])
-      [1.4142135623730951, 1.0]
-      iex> MatrixOperation.singular_value([[2, 2, 2, 2], [1, -1, 1, -1], [-1, 1, -1, 1]])
-      [4.0, 0.0, 2.8284271247461903]
-    """
-  def singular_value(a) when length(a) == 2 or length(a) == 3 do
-    a_t = transpose(a)
-    singular_value_sub(a, a_t)
-    |> eigenvalue
-    |> Enum.map(& :math.pow(&1, 0.5))
-  end
-
-  def singular_value(_) do
-    nil
-  end
-
-  def singular_value_sub(a, a_t) when length(a) < length(a_t) do
-    product(a, a_t)
-  end
-
-  def singular_value_sub(a, a_t) do
-    product(a_t, a)
-  end
-
-  @doc """
-    Matrix diagonalization [R^2×R^2/R^3×R^3 matrix]
-    #### Examples
-      iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
+      iex> MatrixOperation.diagonalization_direct([[1, 3], [4, 2]])
       [[5.0, 0], [0, -2.0]]
-      iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+      iex> MatrixOperation.diagonalization_direct([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
       [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
     """
-  def diagonalization(a) do
-    eigenvalue(a)
-    |> diagonalization_condition
+  def diagonalization_direct(a) do
+    eigenvalue_direct(a)
+    |> diagonalization_direct_condition
   end
 
-  defp diagonalization_condition(a) when a == nil do
+  defp diagonalization_direct_condition(a) when a == nil do
     nil
   end
 
-  defp diagonalization_condition(a) do
+  defp diagonalization_direct_condition(a) do
     a
     |> Enum.with_index
-    |> Enum.map(& diagonalization_sub(&1, length(a), 0, []))
+    |> Enum.map(& diagonalization_direct_sub(&1, length(a), 0, []))
   end
 
-  defp diagonalization_sub(_, dim, i, row) when i + 1 > dim do
+  defp diagonalization_direct_sub(_, dim, i, row) when i + 1 > dim do
     row
   end
 
-  defp diagonalization_sub({ev, index}, dim, i, row) when i != index do
-    diagonalization_sub({ev, index}, dim, i + 1, row ++ [0])
+  defp diagonalization_direct_sub({ev, index}, dim, i, row) when i != index do
+    diagonalization_direct_sub({ev, index}, dim, i + 1, row ++ [0])
   end
 
-  defp diagonalization_sub({ev, index}, dim, i, row) when i == index do
-    diagonalization_sub({ev, index}, dim, i + 1, row ++ [ev])
+  defp diagonalization_direct_sub({ev, index}, dim, i, row) when i == index do
+    diagonalization_direct_sub({ev, index}, dim, i + 1, row ++ [ev])
   end
 
   @doc """
@@ -965,7 +924,7 @@ defmodule MatrixOperation do
   end
 
   defp jordan_R2R2(b, c, m) when (b * b > 4 * c) do
-    diagonalization(m)
+    diagonalization_direct(m)
   end
 
   defp jordan_R2R2(b, c, m) when b * b == 4 * c do
@@ -1006,7 +965,7 @@ defmodule MatrixOperation do
   defp jordan_R3R3(b, c, d, m)
     when 4 * c * c * c - 27 * d * d + b * b * c * c - 18 * b * c * d -
            4 * b * b * b * d > 0 do
-    diagonalization(m)
+    diagonalization_direct(m)
   end
   # Triple root
   defp jordan_R3R3(b, c, d, m)
@@ -1297,6 +1256,139 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    Calculate eigenvalue by using QR decomposition
+    #### Examples
+      iex> MatrixOperation.eigenvalue([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 100)
+      [12.17597106504691, -3.6686830979532696, -2.5072879670936357]
+      iex> MatrixOperation.eigenvalue([[6, 1, 1, 1], [1, 7, 1, 1], [1, 1, 8, 1], [1, 1, 1, 9]], 100)
+      [10.803886359051251, 7.507748705362773, 6.39227529027387, 5.296089645312106]
+    """
+  def eigenvalue(a, loop_num) do
+    eigenvalue_sub(a, 0, loop_num)
+  end
+
+  defp eigenvalue_sub(a, count, loop_num) when count != loop_num do
+    len_a = length(a)
+    u = unit_matrix(len_a)
+    q_n = qr_for_ev(a, u, len_a, u, 1)
+    a_k = q_n
+    |> transpose
+    |> product(a)
+    |> product(q_n)
+    eigenvalue_sub(a_k, count+1, loop_num)
+  end
+
+  defp eigenvalue_sub(a_k, _, _) do
+    a_k
+    |> Enum.with_index
+    |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
+  end
+
+  defp qr_for_ev(a, q, len_a, u, num) when len_a != num do
+    h = get_one_column(a, num)
+    |> replace_zero(num-1)
+    |> householder_for_qr(num-1, u)
+    
+    a_n = product(h, a)
+    q_n = product(q, h)
+    
+    qr_for_ev(a_n, q_n, len_a, u, num+1)
+  end
+
+  defp qr_for_ev(_, q_n, _, _, _) do
+    q_n
+  end
+
+  defp replace_zero(list, thresh_num) do
+    list
+    |> Enum.with_index
+    |> Enum.map(fn {x, i} -> if(i < thresh_num, do: 0, else: x) end)
+  end
+
+  defp householder_for_qr(col, index, u) do
+    col_norm = col
+    |> Enum.map(& &1*&1)
+    |> Enum.sum
+    |> :math.sqrt
+
+    top = Enum.at(col, index)
+    top_cn = if(top >= 0, do: top + col_norm, else: top - col_norm)
+    v = List.replace_at(col, index, top_cn)
+
+    cn_top = if(top >= 0, do: col_norm + top, else: col_norm - top)
+    vtv = [v]
+    |> transpose
+    |> product([v])
+    m = const_multiple(1/(col_norm * cn_top), vtv)
+
+    subtract(u, m)  
+  end
+
+  @doc """
+    Matrix diagonalization
+    #### Examples
+      iex> MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
+      [[5.000000000000018, 0], [0, -1.999999999999997]]
+      iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
+      [[3.000000000000001, 0, 0], [0, 1.0, 0], [0, 0, 0]]
+    """
+  def diagonalization(a, loop_num) do
+    eigenvalue(a, loop_num)
+    |> diagonalization_condition
+    |> Enum.map(& Enum.map(&1, fn x -> zero_approximation(x) end))
+  end
+
+  defp diagonalization_condition(a) when a == nil do
+    nil
+  end
+
+  defp diagonalization_condition(a) do
+    a
+    |> Enum.with_index
+    |> Enum.map(& diagonalization_sub(&1, length(a), 0, []))
+  end
+
+  defp diagonalization_sub(_, dim, i, row) when i + 1 > dim do
+    row
+  end
+
+  defp diagonalization_sub({ev, index}, dim, i, row) when i != index do
+    diagonalization_sub({ev, index}, dim, i + 1, row ++ [0])
+  end
+
+  defp diagonalization_sub({ev, index}, dim, i, row) when i == index do
+    diagonalization_sub({ev, index}, dim, i + 1, row ++ [ev])
+  end
+
+  @doc """
+    Calculate singular Value by using QR decomposition
+    #### Examples
+      iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]], 100)
+      [14.912172620559879, 4.236463407782015, 1.6369134152873956, 0.0]
+    """
+  def singular_value(a, loop_num) do
+    a
+    |> transpose
+    |> product(a)
+    |> eigenvalue(loop_num)
+    |> Enum.map(& zero_approximation(&1))
+    |> Enum.map(& :math.sqrt(&1))
+  end
+
+  @doc """
+  Calculate the rank of a matrix by using QR decomposition
+  ## Examples
+      iex> MatrixOperation.rank([[2, 3, 4], [1, 4, 2], [2, 1, 4]], 100)
+      2
+      iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
+      3
+  """
+  def rank(matrix, loop_num) do
+    singular_value(matrix, loop_num)
+    |> count_finite_values
+  end
+
+  @doc """
     Frobenius norm
     #### Examples
       iex> MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
@@ -1331,13 +1423,13 @@ defmodule MatrixOperation do
     two norm
     #### Examples
       iex> MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
-      5.674983803488142
+      5.674983803488139
       iex> MatrixOperation.two_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-      7.329546645915766
+      7.329546646114924
     """
   def two_norm(a) do
     a
-    |> singular_value
+    |> singular_value(100)
     |> Enum.max
   end
 
