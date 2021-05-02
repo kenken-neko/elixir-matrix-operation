@@ -689,24 +689,24 @@ defmodule MatrixOperation do
   end
 
   @doc """
-  eigenvalue by the direct method [R^2×R^2/R^3×R^3 matrix]
+  eigenvalue by algebra method [R^2×R^2/R^3×R^3 matrix]
   ## Examples
-    iex> MatrixOperation.eigenvalue_direct([[3, 1], [2, 2]])
+    iex> MatrixOperation.eigenvalue_algebra([[3, 1], [2, 2]])
     [4.0, 1.0]
-    iex> MatrixOperation.eigenvalue_direct([[6, -3], [4, -1]])
+    iex> MatrixOperation.eigenvalue_algebra([[6, -3], [4, -1]])
     [3.0, 2.0]
-    iex> MatrixOperation.eigenvalue_direct([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
+    iex> MatrixOperation.eigenvalue_algebra([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
     [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
-    iex> MatrixOperation.eigenvalue_direct([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+    iex> MatrixOperation.eigenvalue_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
     [3.0000000027003626, 0, 0.9999999918989121]
   """
   # 2×2 algebra method
-  def eigenvalue_direct([[a11, a12], [a21, a22]]) do
+  def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
     quadratic_formula(1, -a11 - a22, a11 * a22 - a12 * a21)
   end
 
   # 3×3 algebratic method
-  def eigenvalue_direct([[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]) do
+  def eigenvalue_algebra([[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]) do
     a = -1
     b = a11 + a22 + a33
     c = a21 * a12 + a13 * a31 + a32 * a23 - a11 * a22 - a11 * a33 - a22 * a33
@@ -718,7 +718,7 @@ defmodule MatrixOperation do
     if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
   end
 
-  def eigenvalue_direct(_a) do
+  def eigenvalue_algebra(_a) do
     "2×2 or 3×3 matrix only"
   end
 
@@ -844,7 +844,7 @@ defmodule MatrixOperation do
       [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
     """
   def diagonalization_algebra(matrix) do
-    eigenvalue_direct(matrix)
+    eigenvalue_algebra(matrix)
     |> diagonalization_algebra_condition()
   end
 
