@@ -55,8 +55,8 @@ defmodule MatrixOperation do
       [[1, 1], [1, 1], [1, 1]]
     """
   def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
-    Enum.to_list(1..m) |>
-    Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
+    Enum.to_list(1..m) 
+    |> Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
   end
 
   def even_matrix(_m, _n, _s) do
@@ -94,7 +94,7 @@ defmodule MatrixOperation do
   """
   def get_one_column(matrix, col_idx) do
     matrix
-    |> transpose
+    |> transpose()
     |> Enum.at(col_idx - 1)
   end
 
@@ -119,11 +119,11 @@ defmodule MatrixOperation do
   """
   def delete_one_column(matrix, del_idx) do
     matrix
-    |> transpose
+    |> transpose()
     |> Enum.with_index()
     |> Enum.reject(fn {_x, idx} -> idx == del_idx - 1 end)
     |> Enum.map(fn {x, _idx} -> x end)
-    |> transpose
+    |> transpose()
   end
 
   @doc """
@@ -149,7 +149,7 @@ defmodule MatrixOperation do
     |> transpose
     |> Enum.with_index()
     |> Enum.map(fn {x, idx} -> if(idx == exchange_idx - 1, do: exchange_list, else: x) end)
-    |> transpose
+    |> transpose()
   end
 
   @doc """
@@ -312,7 +312,8 @@ defmodule MatrixOperation do
       [[1, 3], [2, 5]]
     """
   def leading_principal_minor(matrix, k) do
-    Enum.slice(matrix, 0, k)
+    matrix
+    |> Enum.slice(0, k)
     |> Enum.map(& Enum.slice(&1, 0, k))
   end
 
@@ -346,9 +347,10 @@ defmodule MatrixOperation do
     u_matrix = even_matrix(matrix_len, matrix_len, 0)
                |> exchange_one_row(1, hd(matrix))
     inverce_u11 = 1.0 / hd(hd(u_matrix))
-    factor = transpose(matrix)
-              |> get_one_row(1)
-              |> Enum.slice(1, matrix_len)
+    factor = matrix
+    |> transpose()
+    |> get_one_row(1)
+    |> Enum.slice(1, matrix_len)
     l_row = [1] ++ hd(const_multiple(inverce_u11, [factor]))
     l_matrix = even_matrix(matrix_len, matrix_len, 0)
                |> exchange_one_row(1, l_row)
@@ -504,7 +506,7 @@ defmodule MatrixOperation do
 
     create_index_matrix(matrix)
     |> Enum.map(&map_index_row(matrix, det, &1))
-    |> transpose
+    |> transpose()
   end
 
   def inverse_matrix(_) do
@@ -516,7 +518,7 @@ defmodule MatrixOperation do
     Enum.map(idx_list, fn x -> Enum.map(idx_list, &[x, &1]) end)
   end
 
-  defp map_index_row(_matrix, 0, _row) do
+  defp map_index_row(_matrix, det, _row) when det == 0 do
     nil
   end
 
@@ -843,7 +845,7 @@ defmodule MatrixOperation do
     """
   def diagonalization_algebra(matrix) do
     eigenvalue_direct(matrix)
-    |> diagonalization_algebra_condition
+    |> diagonalization_algebra_condition()
   end
 
   defp diagonalization_algebra_condition(matrix) when matrix == nil do
@@ -852,7 +854,7 @@ defmodule MatrixOperation do
 
   defp diagonalization_algebra_condition(matrix) do
     matrix
-    |> Enum.with_index
+    |> Enum.with_index()
     |> Enum.map(& diagonalization_algebra_sub(&1, length(matrix), 0, []))
   end
 
@@ -1077,7 +1079,7 @@ defmodule MatrixOperation do
     p_rnd = Enum.map(p, & Enum.map(&1, fn x -> zero_approximation(x) end))
 
     eigenvalue_list = pap
-    |> Enum.with_index
+    |> Enum.with_index()
     |> Enum.map(& jacobi_sub4(&1))
     |> Enum.map(& zero_approximation(&1))
     [eigenvalue_list, p_rnd]
@@ -1101,7 +1103,7 @@ defmodule MatrixOperation do
     p = jacobi_sub3(phi, col_num, max_i, max_j, 0, 0, [], [])
     p_pi = product(p_pre, p)
     p
-    |> transpose
+    |> transpose()
     |> product(matrix)
     |> product(p)
     |> jacobi_iteration(iter_num, l + 1, p_pi)
@@ -1255,7 +1257,7 @@ defmodule MatrixOperation do
     u = unit_matrix(matrix_len)
     q_n = qr_for_ev(a, u, matrix_len, u, 1)
     a_k = q_n
-    |> transpose
+    |> transpose()
     |> product(a)
     |> product(q_n)
     eigenvalue_sub(a_k, count+1, iter_num)
@@ -1263,7 +1265,7 @@ defmodule MatrixOperation do
 
   defp eigenvalue_sub(a_k, _, _) do
     a_k
-    |> Enum.with_index
+    |> Enum.with_index()
     |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
   end
 
@@ -1284,15 +1286,15 @@ defmodule MatrixOperation do
 
   defp replace_zero(list, thresh_num) do
     list
-    |> Enum.with_index
+    |> Enum.with_index()
     |> Enum.map(fn {x, i} -> if(i < thresh_num, do: 0, else: x) end)
   end
 
   defp householder_for_qr(col, index, u) do
     col_norm = col
     |> Enum.map(& &1*&1)
-    |> Enum.sum
-    |> :math.sqrt
+    |> Enum.sum()
+    |> :math.sqrt()
 
     top = Enum.at(col, index)
     top_cn = if(top >= 0, do: top + col_norm, else: top - col_norm)
@@ -1317,7 +1319,7 @@ defmodule MatrixOperation do
     """
   def diagonalization(a, iter_num) do
     eigenvalue(a, iter_num)
-    |> diagonalization_condition
+    |> diagonalization_condition()
     |> Enum.map(& Enum.map(&1, fn x -> zero_approximation(x) end))
   end
 
@@ -1327,7 +1329,7 @@ defmodule MatrixOperation do
 
   defp diagonalization_condition(a) do
     a
-    |> Enum.with_index
+    |> Enum.with_index()
     |> Enum.map(& diagonalization_sub(&1, length(a), 0, []))
   end
 
@@ -1351,7 +1353,7 @@ defmodule MatrixOperation do
     """
   def singular_value(a, iter_num) do
     a
-    |> transpose
+    |> transpose()
     |> product(a)
     |> eigenvalue(iter_num)
     |> Enum.map(& zero_approximation(&1))
@@ -1367,14 +1369,15 @@ defmodule MatrixOperation do
       3
   """
   def rank(matrix, iter_num) do
-    singular_value(matrix, iter_num)
-    |> count_finite_values
+    matrix
+    |> singular_value(iter_num)
+    |> count_finite_values()
   end
 
   defp count_finite_values(x) when is_list(x) do
     x
     |> Enum.map(&count_finite_values(&1))
-    |> Enum.sum
+    |> Enum.sum()
   end
 
   defp count_finite_values(x) when is_number(x) and x == 0 do
@@ -1397,8 +1400,8 @@ defmodule MatrixOperation do
     a
     |> Enum.map(& Enum.map(&1, fn x -> x * x end))
     |> Enum.map(& Enum.sum(&1))
-    |> Enum.sum
-    |> :math.pow(0.5)
+    |> Enum.sum()
+    |> :math.sqrt()
   end
 
   @doc """
@@ -1413,7 +1416,7 @@ defmodule MatrixOperation do
     a
     |> Enum.map(& Enum.map(&1, fn x -> if(x > 0, do: x, else: -x) end))
     |> Enum.map(& Enum.sum(&1))
-    |> Enum.max
+    |> Enum.max()
   end
 
   @doc """
@@ -1427,7 +1430,7 @@ defmodule MatrixOperation do
   def two_norm(a) do
     a
     |> singular_value(100)
-    |> Enum.max
+    |> Enum.max()
   end
 
   @doc """
@@ -1439,10 +1442,11 @@ defmodule MatrixOperation do
       10
     """
   def max_norm(a) do
-    transpose(a)
+    a
+    |> transpose()
     |> Enum.map(& Enum.map(&1, fn x -> if(x > 0, do: x, else: -x) end))
     |> Enum.map(& Enum.sum(&1))
-    |> Enum.max
+    |> Enum.max()
   end
 
   @doc """
@@ -1456,7 +1460,7 @@ defmodule MatrixOperation do
     """
   def variance_covariance_matrix(data) do
     x = data
-    |> transpose
+    |> transpose()
     |> Enum.map(& Enum.map(&1, fn x -> x - Enum.sum(&1)/length(&1) end))
     xt  = transpose(x)
     xtx = product(x, xt)
