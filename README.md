@@ -119,9 +119,9 @@ MatrixOperation.tensor_product([[3, 2, 3], [2, 1, 2]], [[2, 3, 1], [2, 1, 2], [3
     ]
 ]
 ```
-* Calculate eigenvalue by the direct method (Algebraic method for 2×2 or 3×3 matrix)
+* Calculate eigenvalue by algebra method (Algebraic method for 2×2 or 3×3 matrix)
 ```elixir
-MatrixOperation.eigenvalue_direct([[6, -3], [4, -1]])
+MatrixOperation.eigenvalue_algebra([[6, -3], [4, -1]])
 [3.0, 2.0]
 ```
 * Singular value by QR decomposition
@@ -178,7 +178,7 @@ MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
 MatrixOperation.eigenvalue([[6, 1, 1, 1], [1, 7, 1, 1], [1, 1, 8, 1], [1, 1, 1, 9]], 100)
 [10.803886359051251, 7.507748705362773, 6.39227529027387, 5.296089645312106]
 ```
-* diagonalization  by QR decomposition
+* diagonalization by QR decomposition
 ```elixir
 MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
 [[5.000000000000018, 0], [0, -1.999999999999997]]
