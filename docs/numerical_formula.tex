@@ -501,9 +501,105 @@ The real part and imaginary part are calculated by using arctangent's integral f
  \arctan{x} = {\int_0^x} \frac{1}{z^2 + 1} dz. \nonumber
  \end{eqnarray}
  This formula is treated as the numerical integration.
+
+
+\section*{Eigenvalue and eigenvector (Power iteration method to solve maximum eigenvalue and eigenvector of $n$-th eigen equation)}
+An arbitrary (initial) vector ${\bf{b}}^0$ is written by the linear combination of eigenvectors ${\sum_i} c_i{\bf{u}}_i$
+because eigenvectors are linearly independent.
+\begin{eqnarray}
+{\bf{b}}^k {\equiv} A^k {\bf{b}}^0 = A^k {\sum_i} c_i{\bf{u}}_i = {\sum_{i=1}} c_i {\lambda}^k_i {\bf{u}}_i \nonumber \\
+= {\lambda}_1^k (c_1{\bf{u}}_1 + {\sum_{i=2}} c_i \frac{{\lambda}^k_i}{{\lambda}^k_1} {\bf{u}}_i)  \nonumber
+\end{eqnarray}
+where ${\lambda}_1$ is maximum value of the eigenvalue so that $|\frac{{\lambda}^k_i}{{\lambda}^k_1}| < 1$.
+
+If $k$ is a large enough number, 
+we can write the eigenvector of the maximum eigenvalue, shown as
+\begin{eqnarray}
+{\bf{b}}^k {\simeq} {\lambda}^k_1c_1{\bf{u}}_1. \nonumber
+\end{eqnarray} 
+Moreover,  we can write the maximum eigenvalue
+\begin{eqnarray}
+{\lambda}_1 = \frac{({\bf{b}}^k)^TA{\bf{b}}^k}{({\bf{b}}^k)^T{\bf{b}}^k}. \nonumber
+\end{eqnarray}
+
+
+\section*{Eigenvalue and eigenvector (Jacobi method)}
+The Jacobi method is an iterative method for the numerical calculation of the eigenvalues and eigenvectors of a real $n$-th symmetric matrix.
+(cf. \url{https://en.wikipedia.org/wiki/Jacobi_eigenvalue_algorithm} )
+
+
+\section*{Eigenvalue (iterative method using QR decomposition)}
+The iterative method using QR decomposition is used to calculate eigenvalues of a $n$-th real square matrix.
+The QR decomposition is the decomposition of matrix $A$ into orthogonal matrix $Q$ and upper-triangular matrix $R$ as shown below.
+$$
+A = QR
+$$
+In this section, QR decomposition is performed by using Householder transformation.
+Householder transformation corresponds to matrix $H$ below. 
+\begin{eqnarray}
+{\bf{x}} = H {\bf{y}} \nonumber \\
+{\bf{y}} = H {\bf{x}} \nonumber
+\end{eqnarray}
+\begin{eqnarray}
+H = I - \frac{2({\bf{x}} - {\bf{y}})({\bf{x}} - {\bf{y}})^T}{|{\bf{x}} - {\bf{y}}|^2} \nonumber
+\end{eqnarray}
+$H$ is orthogonal matrix where $HH^T=I$.
+Here,
+\[
+  A = A^{(1)} =
+  \left(
+  \begin{array}{ccc}
+  a_{11} & \cdots & a_{1n} \\
+  \vdots & \ddots & \vdots \\
+  a_{n1} & \cdots & a_{nn}
+  \end{array}
+  \right),
+\]
+$$
+A^{(2)}=H^{(1)}A^{(1)}, \\
+A^{(2)} =
+\left(
+\begin{array}{cccc}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+0      & \vdots & \vdots & \vdots \\
+\vdots & \vdots & \vdots & \vdots \\
+0      & a_{n2} & \cdots & a_{nn}
+\end{array}
+\right).
+$$
+$H^{(1)}$ to Householder transform the first column into a finite vector with only the top element.
+
+$$
+A^{(3)}=H^{(2)}A^{(2)}, \\
+A^{(3)} =
+\left(
+\begin{array}{ccccc}
+a_{11} & a_{12} & a_{12} & \cdots & a_{1n} \\
+0      & a_{22} & \vdots & \vdots & \vdots \\
+0      & 0      & \vdots & \vdots & \vdots \\
+\vdots & \vdots & \vdots & \vdots & \vdots \\
+0      & 0      & a_{n2} & \cdots & a_{nn}
+\end{array}
+\right).
+$$
+$H^{(2)}$ to Householder transform the second column into a finite vector with the top 2 elements.
+
+$$
+H^{(n-1)} {\cdots} H^{(1)} A^{(1)} = R,
+$$
+$$
+A = A^{(1)} = H^{(n-1)T} {\cdots} H^{(1)T} R = QR.
+$$
+The product of orthogonal matricies $Q_1$ and $Q_2$ is also orthogonal matrix $Q_3(=Q_1Q_2)$.
+
+
+\section*{Rank}
+Since the rank of matrix is equal to the number of nontrivial nonzero eigenvalues, 
+it is calculated from the eigenvalues obtained by the Jacobi method or iterative method using QR decomposition.
+In this library, we use iterative method using QR decomposition, which has a faster processing speed.
+
  
- 
-\section*{Singular value}
+\section*{Singular Value Decomposition}
 Singular value decomposition (SVD) states:
 $$
 A = U {\Sigma} V^T
@@ -616,44 +712,8 @@ $$P^{-1}AP = J$$ where
    \end{array}
    \right).
   \] .
-  
- 
-\section*{Eigenvalue and eigenvector (Power iteration method to solve maximum eigenvalue and eigenvector of $n$-th eigen equation)}
-An arbitrary (initial) vector ${\bf{b}}^0$ is written by the linear combination of eigenvectors ${\sum_i} c_i{\bf{u}}_i$
-because eigenvectors are linearly independent.
-\begin{eqnarray}
-{\bf{b}}^k {\equiv} A^k {\bf{b}}^0 = A^k {\sum_i} c_i{\bf{u}}_i = {\sum_{i=1}} c_i {\lambda}^k_i {\bf{u}}_i \nonumber \\
-= {\lambda}_1^k (c_1{\bf{u}}_1 + {\sum_{i=2}} c_i \frac{{\lambda}^k_i}{{\lambda}^k_1} {\bf{u}}_i)  \nonumber
-\end{eqnarray}
-where ${\lambda}_1$ is maximum value of the eigenvalue so that $|\frac{{\lambda}^k_i}{{\lambda}^k_1}| < 1$.
- 
-If $k$ is a large enough number, 
-we can write the eigenvector of the maximum eigenvalue, shown as
-\begin{eqnarray}
-{\bf{b}}^k {\simeq} {\lambda}^k_1c_1{\bf{u}}_1. \nonumber
-\end{eqnarray} 
-Moreover,  we can write the maximum eigenvalue
-\begin{eqnarray}
-{\lambda}_1 = \frac{({\bf{b}}^k)^TA{\bf{b}}^k}{({\bf{b}}^k)^T{\bf{b}}^k}. \nonumber
-\end{eqnarray}
 
 
-\section*{Eigenvalue and eigenvector (Jacobi method to solve $n$-th eigen equation)}
-The Jacobi method is an iterative method for the numerical calculation of the eigenvalues and eigenvectors of a real symmetric matrix.
-(cf. \url{https://en.wikipedia.org/wiki/Jacobi_eigenvalue_algorithm} )
-
-
-\section*{Eigenvalue (iterative method using QR decomposition to calcuate eigenvalues of $n$-th eigen equation)}
-The iterative method using QR decomposition is used to calculate eigenvalues of a $n$-th real square matrix.
-(cf. \url{https://en.wikipedia.org/wiki/QR_decomposition} )
-
-
-\section*{Rank}
-Since the rank of matrix is equal to the number of nontrivial nonzero eigenvalues, 
-it is calculated from the eigenvalues obtained by the Jacobi method or iterative method using QR decomposition.
-In this library, we use iterative method using QR decomposition, which has a faster processing speed.
-
- 
 \section*{Matrix norms}
 $A$ is $n{\times}m$ matrix.
 
