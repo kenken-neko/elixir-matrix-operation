@@ -1310,6 +1310,42 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    Calculate eigenvector by using QR decomposition
+    #### Examples
+      iex> MatrixOperation.eigenvector([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
+      [
+        [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
+        [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
+        [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
+      ]
+    """
+  def eigenvector(a, iter_num) do
+    delta = 0.0001 # avoid division by zero
+    a
+    |> eigenvalue(iter_num)
+    |> Enum.map( 
+      & eigenvalue_shift(a, -&1+delta)
+      |> inverse_matrix()
+      |> power_iteration(iter_num)
+      |> eigenvector_sub()
+    )
+    |> Enum.map(& const_multiple(delta, &1))
+  end
+
+  defp eigenvalue_shift(a, ev) do
+    unit = a
+    |> length
+    |> unit_matrix()
+    b = const_multiple(ev, unit)
+    add(a, b)
+  end
+
+  defp eigenvector_sub(a) do
+    [_first, second] = a
+    second
+  end
+
+  @doc """
     Matrix diagonalization
     #### Examples
       iex> MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
