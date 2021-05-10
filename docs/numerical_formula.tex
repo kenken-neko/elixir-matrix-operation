@@ -592,6 +592,94 @@ A = A^{(1)} = H^{(n-1)T} {\cdots} H^{(1)T} R = QR.
 $$
 The product of orthogonal matricies $Q_1$ and $Q_2$ is also orthogonal matrix $Q_3(=Q_1Q_2)$.
 
+Thus,
+$$
+A = A_1 = Q_1R_1, A_2 = R_1Q_1,
+$$
+$$
+A_{k+1} = (Q_k^{-1}{\cdots}Q_1^{-1}) A_1 (Q_1{\cdots}Q_k) = {\tilde{Q}}_k^{-1}A_1{\tilde{Q}}_k.
+$$
+
+On the other hand,
+$$
+A_1^k = Q_1R_1 {\cdots} Q_1R_1 = Q_1(R_1Q_1){\cdots}(R_1Q_1)R_1 = Q_1{\cdots}Q_k R_k{\cdots}R_1 = {\tilde{Q}}_k {\tilde{R}}_k.
+$$
+
+The eigen equations are written as follows.
+$$
+AX=X{\Lambda}.
+$$
+Then,
+$$
+A^k = A_1^k = X{\Lambda}X^{-1} {\cdots} X{\Lambda}X^{-1} = X{\Lambda}^kX^{-1}.
+$$
+
+$QR$ decomposition of $X$ and $LU$ decomposition of $X^{-1}$.
+$$
+X = Q_XR_X, X^{^-1} = LU.
+$$
+$$
+A_1^k = X{\Lambda}X^{-1} = Q_XR_X {\Lambda}^k LU = Q_XR_X ({\Lambda}^k L {\Lambda}^{-k})({\Lambda}^kU).
+$$
+Since it is
+$$
+{\Lambda}^k L {\Lambda}^{-k} =
+\left(
+\begin{array}{cccc}
+1                                  & 0                                 & 0      & 0      \\
+l_{21}({\lambda}_2/{\lambda}_1)^k  & 1                                 & 0      & 0      \\
+l_{31}({\lambda}_3/{\lambda}_1)^k  & l_{32}({\lambda}_3/{\lambda}_2)^k & 1      & 0      \\
+\vdots                             & \vdots                            & \ddots & \vdots \\
+l_{n1}({\lambda}_3/{\lambda}_1)^k  & l_{n2}({\lambda}_3/{\lambda}_1)^k & \cdots & 1
+\end{array}
+\right),
+$$
+$$
+{\lim_{k{\rightarrow}{\infty}}} A_1^k 
+= {\lim_{k{\rightarrow}{\infty}}} Q_XR_X ({\Lambda}^k L {\Lambda}^{-k})({\Lambda}^kU) 
+= Q_X(R_X {\lim_{k{\rightarrow}{\infty}}} {\Lambda}^k U)
+$$
+On the other hand,
+$$
+{\lim_{k{\rightarrow}{\infty}}} A_1^k = {\lim_{k{\rightarrow}{\infty}}} {\tilde{Q}}_k {\tilde{R}}_k.
+$$
+$$
+Q_X = {\lim_{k{\rightarrow}{\infty}}} {\tilde{Q}}_k
+$$
+$$
+{\lim_{k{\rightarrow}{\infty}}} Q_k 
+= {\lim_{k{\rightarrow}{\infty}}} (Q_{k-1}^{-1}{\cdots}Q_{1}^{-1}) (Q_{1}{\cdots}Q_{k-1}) Q_k
+= {\lim_{k{\rightarrow}{\infty}}} {\tilde{Q}}_{k-1}^{-1} {\lim_{k{\rightarrow}{\infty}}} {\tilde{Q}}_{k}
+= Q_X^{-1}Q_X
+= I,
+$$
+$$
+{\lim_{k{\rightarrow}{\infty}}} R_k
+= {\lim_{k{\rightarrow}{\infty}}} A_{k+1}Q_k^{-1}
+= {\lim_{k{\rightarrow}{\infty}}} ({\tilde{Q}}_k^{-1}A_1{\tilde{Q}}_k)Q_k^{-1}
+= {\lim_{k{\rightarrow}{\infty}}} {\tilde{Q}}_k^{-1}A_1(Q_1{\cdots}Q_k)Q_k^{-1}
+= Q_X^{-1}A_1Q_X.
+$$
+Since $X=Q_XR_X$,
+$$
+{\lim_{k{\rightarrow}{\infty}}} R_k = Q_X^{-1}A_1Q_X = (R_XX^{-1})A_1(XR_X^{-1}) = R_X{\Lambda}R_X^{-1},
+$$
+Therefore,
+$$
+{\lim_{k{\rightarrow}{\infty}}} A_k =
+{\lim_{k{\rightarrow}{\infty}}} Q_kR_k =
+R_X{\Lambda}R_X^{-1} =
+\left(
+\begin{array}{cccc}
+{\lambda_1} & *           & *        & *           \\
+0           & {\lambda_2} & *        & *           \\
+\vdots      & {\ddots}    & {\ddots} & *           \\
+0           & {\cdots}    & 0        & {\lambda_n}
+\end{array}
+\right).
+$$
+Also, by finding the eigenvalues above, we can use inverse power iteration and eigenvalue shift to find the eigenvectors.
+
 
 \section*{Rank}
 Since the rank of matrix is equal to the number of nontrivial nonzero eigenvalues, 
