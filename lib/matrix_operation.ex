@@ -1241,14 +1241,33 @@ defmodule MatrixOperation do
   end
 
   @doc """
-    Calculate eigenvalue by using QR decomposition
+    Calculate eigenvalue and eigenvector by using QR decomposition
     #### Examples
-      iex> MatrixOperation.eigenvalue([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 100)
-      [12.17597106504691, -3.6686830979532696, -2.5072879670936357]
-      iex> MatrixOperation.eigenvalue([[6, 1, 1, 1], [1, 7, 1, 1], [1, 1, 8, 1], [1, 1, 1, 9]], 100)
-      [10.803886359051251, 7.507748705362773, 6.39227529027387, 5.296089645312106]
+      iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
+      [
+        [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
+        [
+          [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
+          [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
+          [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
+        ]
+      ]
     """
-  def eigenvalue(a, iter_num) do
+  def eigen(a, iter_num) do
+    delta = 0.0001 # avoid division by zero
+    eval = eigenvalue(a, iter_num)
+    evec = eval
+    |> Enum.map( 
+      & eigenvalue_shift(a, -&1+delta)
+      |> inverse_matrix()
+      |> power_iteration(iter_num)
+      |> eigen_sub()
+    )
+    |> Enum.map(& const_multiple(delta, &1))
+    [eval, evec]
+  end
+
+  defp eigenvalue(a, iter_num) do
     eigenvalue_sub(a, 0, iter_num)
   end
 
@@ -1309,29 +1328,6 @@ defmodule MatrixOperation do
     subtract(u, m)  
   end
 
-  @doc """
-    Calculate eigenvector by using QR decomposition
-    #### Examples
-      iex> MatrixOperation.eigenvector([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
-      [
-        [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
-        [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
-        [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
-      ]
-    """
-  def eigenvector(a, iter_num) do
-    delta = 0.0001 # avoid division by zero
-    a
-    |> eigenvalue(iter_num)
-    |> Enum.map( 
-      & eigenvalue_shift(a, -&1+delta)
-      |> inverse_matrix()
-      |> power_iteration(iter_num)
-      |> eigenvector_sub()
-    )
-    |> Enum.map(& const_multiple(delta, &1))
-  end
-
   defp eigenvalue_shift(a, ev) do
     unit = a
     |> length
@@ -1340,7 +1336,7 @@ defmodule MatrixOperation do
     add(a, b)
   end
 
-  defp eigenvector_sub(a) do
+  defp eigen_sub(a) do
     [_first, second] = a
     second
   end
