@@ -173,20 +173,19 @@ MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
   ]
 ]
 ```
-* Calculate eigenvalue by QR decomposition
+* Calculate eigenvalue and eigenvector by QR decomposition
 ```elixir
-MatrixOperation.eigenvalue([[6, 1, 1, 1], [1, 7, 1, 1], [1, 1, 8, 1], [1, 1, 1, 9]], 100)
-[10.803886359051251, 7.507748705362773, 6.39227529027387, 5.296089645312106]
-```
-* Calculate eigenvector by QR decomposition
-```elixir
-MatrixOperation.eigenvector([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
+MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
 [
-  [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
-  [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
-  [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
+    [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
+    [
+        [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
+        [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
+        [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
+    ]
 ]
 ```
+The second argument is max iterate number.
 * diagonalization by QR decomposition
 ```elixir
 MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
