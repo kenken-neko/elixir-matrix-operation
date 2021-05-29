@@ -1,6 +1,6 @@
 # MatrixOperation
-*MatrixOperation* is a linear algebra library in Elixir language. For example, this library can be used to solve eigenvalue equations.  
-You can refer to the online documentation at https://hexdocs.pm/matrix_operation/MatrixOperation.html#content and mathematical description at 'docs/latex_out/numerical_formula.pdf' in this package.  
+*MatrixOperation* is a linear algebra library in Elixir language. For example, this library can be used to solve eigenvalue equations and singular value decompositions. There are several other functions that can be used to solve some of these problems. You can refer to the online documentation at https://hexdocs.pm/matrix_operation/MatrixOperation.html#content and mathematical description at 'docs/latex_out/numerical_formula.pdf' in this package.    
+Moreover, several patterns of functions are implemented as algorithms for solving each problem. The functions are methods that QR decomposition techniques to solve eigenvalue equations of arbitrary dimensions, or algebraic techniques that are limited in the number of dimensions but provide exact solutions. There is also function of the Jacobi method, which is a method for solving eigenvalue equations of real symmetric matrices.  
 
 ## Notice
 Matrix indices of a row and column is an integer starting from 1 (not from 0).
