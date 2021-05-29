@@ -1,7 +1,7 @@
 defmodule MatrixOperation do
   @moduledoc """
-    Documentation for Matrix operation library.
-    The indices of a row and column of a matrix is an integer starting from 1.
+    *MatrixOperation* is a linear algebra library in Elixir language.
+    Matrix indices of a row and column is an integer starting from 1 (not from 0).
   """
 
   @doc """
@@ -14,8 +14,8 @@ defmodule MatrixOperation do
       [num_rows, num_cols]: Numbers of rows and columns of a matrix
 
     #### Example
-      iex> MatrixOperation.row_column_matrix([[3, 2, 3], [2, 1, 2]])
-      [2, 3]
+        iex> MatrixOperation.row_column_matrix([[3, 2, 3], [2, 1, 2]])
+        [2, 3]
     """
   def row_column_matrix(matrix) when is_list(hd(matrix)) do
     col_num = Enum.map(matrix, &row_column_matrix_sub(&1, 0))
@@ -45,8 +45,8 @@ defmodule MatrixOperation do
       A n-th unit matrix
 
     #### Example
-      iex> MatrixOperation.unit_matrix(3)
-      [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        iex> MatrixOperation.unit_matrix(3)
+        [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
     """
   def unit_matrix(n) when n > 0 and is_integer(n) do
     idx_list = Enum.to_list(1..n)
@@ -73,10 +73,10 @@ defmodule MatrixOperation do
       A m×n matrix
 
     #### Example
-      iex> MatrixOperation.even_matrix(2, 3, 0)
-      [[0, 0, 0], [0, 0, 0]]
-      iex> MatrixOperation.even_matrix(3, 2, 1)
-      [[1, 1], [1, 1], [1, 1]]
+        iex> MatrixOperation.even_matrix(2, 3, 0)
+        [[0, 0, 0], [0, 0, 0]]
+        iex> MatrixOperation.even_matrix(3, 2, 1)
+        [[1, 1], [1, 1], [1, 1]]
     """
   def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
     Enum.to_list(1..m) 
@@ -98,8 +98,8 @@ defmodule MatrixOperation do
       An element of a matrix
 
     #### Example
-      iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
-      1
+        iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
+        1
     """
   def get_one_element(matrix, [row_idx, col_idx]) do
     matrix
@@ -118,8 +118,8 @@ defmodule MatrixOperation do
       A row of a matrix
 
     #### Example
-      iex> MatrixOperation.get_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], 1)
-      [1, 2, 3]
+        iex> MatrixOperation.get_one_row([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], 1)
+        [1, 2, 3]
     """
   def get_one_row(matrix, row_idx) do
     matrix
@@ -436,8 +436,8 @@ defmodule MatrixOperation do
       Leading principal minor
 
     #### Example
-      iex> MatrixOperation.leading_principal_minor([[1, 3, 2], [2, 5, 1], [3, 4, 5]], 2)
-      [[1, 3], [2, 5]]
+        iex> MatrixOperation.leading_principal_minor([[1, 3, 2], [2, 5, 1], [3, 4, 5]], 2)
+        [[1, 3], [2, 5]]
     """
   def leading_principal_minor(matrix, idx) do
     matrix
@@ -454,12 +454,12 @@ defmodule MatrixOperation do
     #### Output
       [L, U]: L(U) is L(U)-matrix of LU decomposition.
 
-    #### Examples
-      iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
-      [
-        [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
-        [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
-      ]
+    #### Example
+        iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
+        [
+          [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
+          [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
+        ]
     """
   def lu_decomposition(matrix) do
     [row_num, col_num] = row_column_matrix(matrix)
@@ -923,14 +923,14 @@ defmodule MatrixOperation do
       Eigenvalues
 
     #### Example
-      iex> MatrixOperation.eigenvalue_algebra([[3, 1], [2, 2]])
-      [4.0, 1.0]
-      iex> MatrixOperation.eigenvalue_algebra([[6, -3], [4, -1]])
-      [3.0, 2.0]
-      iex> MatrixOperation.eigenvalue_algebra([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
-      [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
-      iex> MatrixOperation.eigenvalue_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-      [3.0000000027003626, 0, 0.9999999918989121]
+        iex> MatrixOperation.eigenvalue_algebra([[3, 1], [2, 2]])
+        [4.0, 1.0]
+        iex> MatrixOperation.eigenvalue_algebra([[6, -3], [4, -1]])
+        [3.0, 2.0]
+        iex> MatrixOperation.eigenvalue_algebra([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
+        [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
+        iex> MatrixOperation.eigenvalue_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+        [3.0000000027003626, 0, 0.9999999918989121]
     """
   # 2×2 algebra method
   def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
@@ -1077,10 +1077,10 @@ defmodule MatrixOperation do
       Diagonalized matrix
 
     #### Example
-      iex> MatrixOperation.diagonalization_algebra([[1, 3], [4, 2]])
-      [[5.0, 0], [0, -2.0]]
-      iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-      [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
+        iex> MatrixOperation.diagonalization_algebra([[1, 3], [4, 2]])
+        [[5.0, 0], [0, -2.0]]
+        iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+        [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
     """
   def diagonalization_algebra(matrix) do
     eigenvalue_algebra(matrix)
@@ -1119,20 +1119,20 @@ defmodule MatrixOperation do
       Jordan normal form matrix
 
     #### Example
-      iex> MatrixOperation.jordan_normal_form([[1, 3], [4, 2]])
-      [[5.0, 0], [0, -2.0]]
-      iex> MatrixOperation.jordan_normal_form([[7, 2], [-2, 3]])
-      [[5.0, 1], [0, 5.0]]
-      iex> MatrixOperation.jordan_normal_form([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-      [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
-      iex> MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
-      [[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
-      iex> MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
-      [[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
-      iex> MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
-      [[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
-      iex> MatrixOperation.jordan_normal_form([[6, 2, 3], [-3, 0, -2], [-4, -2, -1]])
-      [[1.0, 0, 0], [0, 2.0, 1], [0, 0, 2.0]]
+        iex> MatrixOperation.jordan_normal_form([[1, 3], [4, 2]])
+        [[5.0, 0], [0, -2.0]]
+        iex> MatrixOperation.jordan_normal_form([[7, 2], [-2, 3]])
+        [[5.0, 1], [0, 5.0]]
+        iex> MatrixOperation.jordan_normal_form([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
+        [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
+        iex> MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
+        [[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
+        iex> MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
+        [[2.0, 1, 0], [0, 2.0, 0], [0, 0, 2.0]]
+        iex> MatrixOperation.jordan_normal_form([[1, 0, -1], [0, 2, 0], [0, 1, 1]])
+        [[2.0, 0, 0], [0, 0.9999999999999999, 1], [0, 0, 0.9999999999999999]]
+        iex> MatrixOperation.jordan_normal_form([[6, 2, 3], [-3, 0, -2], [-4, -2, -1]])
+        [[1.0, 0, 0], [0, 2.0, 1], [0, 0, 2.0]]
     """
   # R^2×R^2 matrix
   def jordan_normal_form([[m11, m12], [m21, m22]]) do
@@ -1275,16 +1275,16 @@ defmodule MatrixOperation do
       Maximum eigen value and eigen vector
 
     #### Example
-      iex> MatrixOperation.power_iteration([[3, 1], [2, 2]], 100)
-      [
-        4.0,
-        [2.8284271247461903, 2.8284271247461903]
-      ]
-      iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
-      [
-        3.0,
-        [1.0, -2.0, 2.0]
-      ]
+        iex> MatrixOperation.power_iteration([[3, 1], [2, 2]], 100)
+        [
+          4.0,
+          [2.8284271247461903, 2.8284271247461903]
+        ]
+        iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
+        [
+          3.0,
+          [1.0, -2.0, 2.0]
+        ]
     """
   def power_iteration(matrix, iter_num) do
     init_vec = random_column(length(matrix))
@@ -1326,15 +1326,15 @@ defmodule MatrixOperation do
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
 
     #### Example
-      iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
-      [
-        [11.827601656659317, 3.5956497715829547, -0.42325142824210527],
+        iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
         [
-          [0.8892872578006493, -0.42761854121982545, -0.16220529066103917],
-          [0.4179466723082325, 0.9038581385545962, -0.09143874712126684],
-          [0.1857114757355589, 0.013522151221627882, 0.982511271796136]
+          [11.827601656659317, 3.5956497715829547, -0.42325142824210527],
+          [
+            [0.8892872578006493, -0.42761854121982545, -0.16220529066103917],
+            [0.4179466723082325, 0.9038581385545962, -0.09143874712126684],
+            [0.1857114757355589, 0.013522151221627882, 0.982511271796136]
+          ]
         ]
-      ]
     """
   def jacobi(matrix, iter_num) do
     [pap, p] = jacobi_iteration(matrix, iter_num, 0, unit_matrix(length(matrix)))
@@ -1468,16 +1468,19 @@ defmodule MatrixOperation do
       [Singular values, U-matrix, V-matrix]: Singular values, U-matrix and V-matrix
 
     #### Example
-      iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
-      [
-        [1.0, 1.4142135623730951],
-        [[1.0, 0], [0, 1.0]],
+        iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
         [
-          [1.0, 0, 0],
-          [0, 0.7071067458364744, -0.707106816536619],
-          [0, 0.707106816536619, 0.7071067458364744]
+          [1.0, 1.4142135623730951],
+          [
+            [1.0, 0], 
+            [0, 1.0]
+          ],
+          [
+            [1.0, 0, 0],
+            [0, 0.7071067458364744, -0.707106816536619],
+            [0, 0.707106816536619, 0.7071067458364744]
+          ]
         ]
-      ]
     """
   def svd(a, iter_num) do
     a_t = transpose(a)
@@ -1521,15 +1524,15 @@ defmodule MatrixOperation do
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
 
     #### Example
-      iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
-      [
-        [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
+        iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
         [
-          [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
-          [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
-          [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
+          [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
+          [
+            [0.49659978457191395, 0.577350269219531, 0.6481167492812223],
+            [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
+            [-0.8095854617817337, 0.5773502692195656, 0.10600965431255223]
+          ]
         ]
-      ]
     """
   def eigen(a, iter_num) do
     delta = 0.0001 # avoid division by zero
@@ -1630,10 +1633,10 @@ defmodule MatrixOperation do
       Diagonalized matrix
 
     #### Example
-      iex> MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
-      [[5.000000000000018, 0], [0, -1.999999999999997]]
-      iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
-      [[3.000000000000001, 0, 0], [0, 1.0, 0], [0, 0, 0]]
+        iex> MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
+        [[5.000000000000018, 0], [0, -1.999999999999997]]
+        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
+        [[3.000000000000001, 0, 0], [0, 1.0, 0], [0, 0, 0]]
     """
   def diagonalization(a, iter_num) do
     eigenvalue(a, iter_num)
@@ -1674,8 +1677,8 @@ defmodule MatrixOperation do
       Singular values list
 
     #### Example
-      iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]], 100)
-      [14.912172620559879, 4.236463407782015, 1.6369134152873956, 0.0]
+        iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]], 100)
+        [14.912172620559879, 4.236463407782015, 1.6369134152873956, 0.0]
     """
   def singular_value(a, iter_num) do
     a
@@ -1688,7 +1691,7 @@ defmodule MatrixOperation do
 
   @doc """
     Calculate the rank of a matrix by using QR decomposition
-    #### Examples
+    #### Example
         iex> MatrixOperation.rank([[2, 3, 4], [1, 4, 2], [2, 1, 4]], 100)
         2
         iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
@@ -1724,10 +1727,10 @@ defmodule MatrixOperation do
       Frobenius norm
 
     #### Example
-      iex> MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
-      5.916079783099616
-      iex> MatrixOperation.frobenius_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-      7.54983443527075
+        iex> MatrixOperation.frobenius_norm([[2, 3], [1, 4], [2, 1]])
+        5.916079783099616
+        iex> MatrixOperation.frobenius_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+        7.54983443527075
     """
   def frobenius_norm(a) do
     a
@@ -1747,10 +1750,10 @@ defmodule MatrixOperation do
       one norm
 
     #### Example
-      iex> MatrixOperation.one_norm([[2, 3], [1, 4], [2, 1]])
-      5
-      iex> MatrixOperation.one_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-      7
+        iex> MatrixOperation.one_norm([[2, 3], [1, 4], [2, 1]])
+        5
+        iex> MatrixOperation.one_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+        7
     """
   def one_norm(a) do
     a
@@ -1769,10 +1772,10 @@ defmodule MatrixOperation do
       The two norm
 
     #### Example
-      iex> MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
-      5.674983803488139
-      iex> MatrixOperation.two_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-      7.329546646114924
+        iex> MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
+        5.674983803488139
+        iex> MatrixOperation.two_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+        7.329546646114924
     """
   def two_norm(a) do
     a
@@ -1790,10 +1793,10 @@ defmodule MatrixOperation do
       The max norm
 
     #### Example
-      iex> MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
-      8
-      iex> MatrixOperation.max_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-      10
+        iex> MatrixOperation.max_norm([[2, 3], [1, 4], [2, 1]])
+        8
+        iex> MatrixOperation.max_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
+        10
     """
   def max_norm(a) do
     a
@@ -1813,11 +1816,11 @@ defmodule MatrixOperation do
       Variance-covariance matrix
 
     #### Example
-      iex> MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
-      [
-        [466.66666666666663, 166.66666666666666],
-        [166.66666666666666, 66.66666666666666]
-      ]
+        iex> MatrixOperation.variance_covariance_matrix([[40, 80], [80, 90], [90, 100]])
+        [
+          [466.66666666666663, 166.66666666666666],
+          [166.66666666666666, 66.66666666666666]
+        ]
     """
   def variance_covariance_matrix(data) do
     x = data
