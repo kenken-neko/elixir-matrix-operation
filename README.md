@@ -1,4 +1,4 @@
-# elixir-matrix-operation
+# MatrixOperation
 *MatrixOperation* is a linear algebra library in Elixir language. For example, this library can be used to solve eigenvalue equations.  
 You can refer to the online documentation at https://hexdocs.pm/matrix_operation/MatrixOperation.html#content and mathematical description at 'docs/latex_out/numerical_formula.pdf' in this package.  
 
