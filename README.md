@@ -22,7 +22,7 @@ You can install this package by adding this code to dependencies in your mix.exs
 ```elixir
 def deps do
   [
-    {:matrix_operation, "~> 0.3.7"}
+    {:matrix_operation, "~> 0.3.9"}
   ]
 end
 ```
