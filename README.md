@@ -5,7 +5,7 @@ Moreover, several patterns of functions are implemented as algorithms for solvin
 ## Notice
 A matrix of any dimension can be created.
 ```
-MatrixOperation.even_matrix(3, 2, 1)
+iex> MatrixOperation.even_matrix(3, 2, 1)
 [[1, 1], [1, 1], [1, 1]]
 ```
 The first argument is the number of row number, the second argument is the number of column number and the third argument is value of the elements.  
@@ -13,8 +13,11 @@ Matrix indices of a row and column is an integer starting from 1 (not from 0).
 <img src="https://user-images.githubusercontent.com/42142120/82437767-ed1afd00-9ad2-11ea-8ff0-223eb8f0b1d9.jpg" width="500">  
 For example,
 ```
-MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
-1
+iex> rand_matrix = MatrixOperation.random_matrix(2, 3, 0, 1, "real")
+[[0.3823, 0.8708, 0.9712], [0.4284, 0.0067, 0.0604]]
+
+iex> MatrixOperation.get_one_element(rand_matrix, [1, 2])
+0.8708
 ```
 
 ## Installation
