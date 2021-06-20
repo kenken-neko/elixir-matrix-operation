@@ -88,6 +88,45 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    A m×n matrix having random elements is got.
+
+    #### Argument
+      - m: Number of rows in the unit matrix to output.
+      - n: Number of columns in the unit matrix to output.
+      - min_val: Minimum value of random number.
+      - max_val: Maximum value of random number.
+      - type: Data type of elements. "int" or "real".
+
+    #### Output
+      A m×n matrix
+    """
+  def random_matrix(m, n, min_val, max_val, type) when m > 0 and n > 0 and max_val > min_val do
+    Enum.to_list(1..m) 
+    |> Enum.map(
+        fn _ -> 
+          Enum.map(
+            Enum.to_list(1..n), & &1 * 0 + random_element(min_val, max_val, type)
+          ) 
+        end
+      )
+  end
+
+  def random_matrix(_m, _n, _min_val, _max_val, _type) do
+    nil
+  end
+
+  defp random_element(min_val, max_val, "int") do
+    Enum.random(min_val..max_val)
+  end
+
+  defp random_element(min_val, max_val, "real") do
+    const = 10000
+    min_val_real = min_val * const
+    max_val_real = max_val * const
+    Enum.random(min_val_real..max_val_real) / const
+  end
+
+  @doc """
     An element of a matrix is got.
 
     #### Argument
