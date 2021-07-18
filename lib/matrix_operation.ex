@@ -79,7 +79,7 @@ defmodule MatrixOperation do
         [[1, 1], [1, 1], [1, 1]]
     """
   def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
-    Enum.to_list(1..m) 
+    Enum.to_list(1..m)
     |> Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
   end
 
@@ -101,12 +101,12 @@ defmodule MatrixOperation do
       A m×n matrix
     """
   def random_matrix(m, n, min_val, max_val, type) when m > 0 and n > 0 and max_val > min_val do
-    Enum.to_list(1..m) 
+    Enum.to_list(1..m)
     |> Enum.map(
-        fn _ -> 
+        fn _ ->
           Enum.map(
             Enum.to_list(1..n), & &1 * 0 + random_element(min_val, max_val, type)
-          ) 
+          )
         end
       )
   end
@@ -489,7 +489,7 @@ defmodule MatrixOperation do
 
     #### Argument
       - matrix: Target matrix to solve LU decomposition.
-    
+
     #### Output
       [L, U]: L(U) is L(U)-matrix of LU decomposition.
 
@@ -708,16 +708,20 @@ defmodule MatrixOperation do
         iex> MatrixOperation.inverse_matrix([[1, 1, -1], [-2, -1, 1], [-1, -2, 1]])
         [[-1.0, -1.0, 0.0], [-1.0, 0.0, -1.0], [-3.0, -1.0, -1.0]]
     """
-  def inverse_matrix(matrix) when is_list(hd(matrix)) do
+  def inverse_matrix(matrix) do
+    # Check matrix
+    [row_num, col_num] = row_column_matrix(matrix)
+    matrix_rank = if(row_num == col_num, do: rank(matrix, 100), else: nil)
+    # Get inverse matrix
+    if(row_num == matrix_rank, do: get_inverse_matrix(matrix), else: nil)
+  end
+
+  def get_inverse_matrix(matrix) do
     det = determinant(matrix)
 
     create_index_matrix(matrix)
     |> Enum.map(&map_index_row(matrix, det, &1))
     |> transpose()
-  end
-
-  def inverse_matrix(_) do
-    nil
   end
 
   defp create_index_matrix(matrix) do
@@ -955,7 +959,7 @@ defmodule MatrixOperation do
     Calculate eigenvalue using algebra method [R^2×R^2/R^3×R^3 matrix]
 
     #### Argument
-      - [[a11, a12], [a21, a22]] or [[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]: 
+      - [[a11, a12], [a21, a22]] or [[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]:
         R^2×R^2/R^3×R^3 matrix
 
     #### Output
@@ -1511,7 +1515,7 @@ defmodule MatrixOperation do
         [
           [1.0, 1.4142135623730951],
           [
-            [1.0, 0], 
+            [1.0, 0],
             [0, 1.0]
           ],
           [
@@ -1577,7 +1581,7 @@ defmodule MatrixOperation do
     delta = 0.0001 # avoid division by zero
     eval = eigenvalue(a, iter_num)
     evec = eval
-    |> Enum.map( 
+    |> Enum.map(
       & eigenvalue_shift(a, -&1+delta)
       |> inverse_matrix()
       |> power_iteration(iter_num)
@@ -1612,10 +1616,10 @@ defmodule MatrixOperation do
     h = get_one_column(a, num)
     |> replace_zero(num-1)
     |> householder_for_qr(num-1, u)
-    
+
     a_n = product(h, a)
     q_n = product(q, h)
-    
+
     qr_for_ev(a_n, q_n, matrix_len, u, num+1)
   end
 
@@ -1645,7 +1649,7 @@ defmodule MatrixOperation do
     |> product([v])
     m = const_multiple(1/(col_norm * cn_top), vtv)
 
-    subtract(u, m)  
+    subtract(u, m)
   end
 
   defp eigenvalue_shift(a, ev) do
