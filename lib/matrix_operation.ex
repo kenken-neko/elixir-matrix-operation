@@ -1450,6 +1450,28 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    Moore-Penrose general inverse matrix
+    #### Argument
+      - matrix: Matrix to be Moore-Penrose general inverse matrix.
+    #### Output
+      Moore-Penrose general inverse matrix
+    #### Example
+        iex> MatrixOperation.general_inverse_matrix([[1, 1], [1, -1], [0, 1]], 100)
+        [[-1.0, -1.0, 0.0], [-1.0, 0.0, -1.0], [-3.0, -1.0, -1.0]]
+    """
+  def general_inverse_matrix(matrix, iter_num) do
+    [s, u, v] = svd(matrix, iter_num)
+    st = general_inverse_matrix_sub(s)
+    # VΣ^-U^T
+    product(v, st)
+    |> product(u)
+  end
+
+  defp general_inverse_matrix_sub(a) do
+    Enum.map(a, fn x -> if(x < 0.000001, do: 0, else: 1/x) end)
+  end
+
+  @doc """
     Calculate eigenvalues and eigenvectors by using QR decomposition.
     #### Argument
       - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
