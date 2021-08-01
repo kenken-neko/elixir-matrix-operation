@@ -1460,15 +1460,35 @@ defmodule MatrixOperation do
         [[-1.0, -1.0, 0.0], [-1.0, 0.0, -1.0], [-3.0, -1.0, -1.0]]
     """
   def general_inverse_matrix(matrix, iter_num) do
-    [s, u, v] = svd(matrix, iter_num)
-    st = general_inverse_matrix_sub(s)
-    # VΣ^-U^T
-    product(v, st)
-    |> product(u)
+    svd(matrix, iter_num)
+    |> sv_matrix_inv()
   end
 
-  defp general_inverse_matrix_sub(a) do
-    Enum.map(a, fn x -> if(x < 0.000001, do: 0, else: 1/x) end)
+  defp sv_matrix_inv([sv, u, v]) do
+    # Zero matrix with index
+    {_, u_col} = size(u)
+    {v_row, _} = size(v)
+    zm_idx =
+      even_matrix(v_row, u_col, 0)
+      |> Enum.with_index()
+    # Inverse singular value matrix
+    len_sv = length(sv)
+    svm_inv =
+      Enum.map(
+        zm_idx,
+        fn {zm_row, idx} ->
+          List.replace_at(
+            zm_row,
+            idx,
+            if(idx >= len_sv, do: 0, else: 1/Enum.at(sv, idx))
+          )
+        end
+      )
+    # VΣ^-U^T
+    ut = transpose(u)
+    v
+    |> product(svm_inv)
+    |> product(ut)
   end
 
   @doc """
