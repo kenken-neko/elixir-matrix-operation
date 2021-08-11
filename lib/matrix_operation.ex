@@ -1427,10 +1427,18 @@ defmodule MatrixOperation do
           ],
           [[1.0, 0], [0, 1.0]]
         ]
+        iex> MatrixOperation.svd([[1, 1], [1, 1]], 100)
+        [
+          [1.9999999999999987],
+          [[0.7071067458364744, -0.707106816536619], [0.707106816536619, 0.7071067458364744]],
+          [[0.7071067458364744, -0.707106816536619], [0.707106816536619, 0.7071067458364744]]
+        ]
     """
   def svd(a, iter_num) do
     a_t = transpose(a)
-    svd_sub(a, a_t, iter_num)
+    [s, u, v] = svd_sub(a, a_t, iter_num)
+    s2 = exclude_zero(s)
+    [s2, u, v]
   end
 
   def svd_sub(a, a_t, iter_num) when length(a) <= length(a_t) do
@@ -1458,6 +1466,15 @@ defmodule MatrixOperation do
     # A = USV^t
     [s, u, v]
   end
+
+  defp exclude_zero(list) do
+    list2 = Enum.map(list, & zero_approximation(&1))
+    list_len = length(list)
+    zero_list = Enum.to_list(1..list_len)
+    |> Enum.map(& &1 * 0)
+    list2 -- zero_list
+  end
+
   @doc """
     Calculate eigenvalues and eigenvectors by using QR decomposition.
     #### Argument
