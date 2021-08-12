@@ -1402,7 +1402,9 @@ defmodule MatrixOperation do
       - matrix: Matrix to adapt the SVD using the Jacobi method.
       - iter_num: iteration number of the Jacobi method.
     #### Output
-      [Singular values, U-matrix, V-matrix]: Singular values, U-matrix and V-matrix
+      [Singular values, U-matrix, V-matrix]:
+        Singular values, U-matrix and V-matrix.
+        Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
         [
@@ -1437,8 +1439,7 @@ defmodule MatrixOperation do
   def svd(a, iter_num) do
     a_t = transpose(a)
     [s, u, v] = svd_sub(a, a_t, iter_num)
-    s2 = exclude_zero(s)
-    [s2, u, v]
+    [exclude_zero(s), u, v]
   end
 
   def svd_sub(a, a_t, iter_num) when length(a) <= length(a_t) do
@@ -1628,17 +1629,17 @@ defmodule MatrixOperation do
       - a: Matrix to calculate singular values.
       - iter_num: iteration number of the QR decomposition.
     #### Output
-      Singular values list
+      Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]], 100)
-        [14.912172620559879, 4.236463407782015, 1.6369134152873956, 0.0]
+        [14.912172620559879, 4.236463407782015, 1.6369134152873956]
     """
   def singular_value(a, iter_num) do
     a
     |> transpose()
     |> product(a)
     |> eigenvalue(iter_num)
-    |> Enum.map(& zero_approximation(&1))
+    |> exclude_zero()
     |> Enum.map(& :math.sqrt(&1))
   end
 
