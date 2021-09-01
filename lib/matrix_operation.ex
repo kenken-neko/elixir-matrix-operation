@@ -886,6 +886,7 @@ defmodule MatrixOperation do
   # 2×2 algebra method
   def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
     quadratic_formula(1, -a11 - a22, a11 * a22 - a12 * a21)
+    |> exclude_zero()
   end
 
   # 3×3 algebratic method
@@ -899,6 +900,7 @@ defmodule MatrixOperation do
 
     dis = -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d - 4 * b * b * b * d
     if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
+    |> exclude_zero()
   end
 
   def eigenvalue_algebra(_a) do
@@ -1438,8 +1440,7 @@ defmodule MatrixOperation do
     """
   def svd(a, iter_num) do
     a_t = transpose(a)
-    [s, u, v] = svd_sub(a, a_t, iter_num)
-    [exclude_zero(s), u, v]
+    svd_sub(a, a_t, iter_num)
   end
 
   def svd_sub(a, a_t, iter_num) when length(a) <= length(a_t) do
@@ -1510,6 +1511,7 @@ defmodule MatrixOperation do
 
   defp eigenvalue(a, iter_num) do
     eigenvalue_sub(a, 0, iter_num)
+    |> exclude_zero()
   end
 
   defp eigenvalue_sub(a, count, iter_num) when count != iter_num do
@@ -1639,7 +1641,6 @@ defmodule MatrixOperation do
     |> transpose()
     |> product(a)
     |> eigenvalue(iter_num)
-    |> exclude_zero()
     |> Enum.map(& :math.sqrt(&1))
   end
 
