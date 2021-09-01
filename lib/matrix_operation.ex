@@ -872,7 +872,7 @@ defmodule MatrixOperation do
       - [[a11, a12], [a21, a22]] or [[a11, a12, a13], [a21, a22, a23], [a31, a32, a33]]:
         R^2×R^2/R^3×R^3 matrix
     #### Output
-      Eigenvalues
+      Eigenvalues which is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.eigenvalue_algebra([[3, 1], [2, 2]])
         [4.0, 1.0]
@@ -1483,7 +1483,8 @@ defmodule MatrixOperation do
       - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
       - iter_num: iteration number of the QR decomposition.
     #### Output
-      [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
+      [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
+      Eigenvalue is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
         [
