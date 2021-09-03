@@ -886,7 +886,7 @@ defmodule MatrixOperation do
   # 2×2 algebra method
   def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
     quadratic_formula(1, -a11 - a22, a11 * a22 - a12 * a21)
-    |> exclude_zero()
+    |> exclude_zero_eigenvalue()
   end
 
   # 3×3 algebratic method
@@ -900,7 +900,7 @@ defmodule MatrixOperation do
 
     dis = -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d - 4 * b * b * b * d
     if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
-    |> exclude_zero()
+    |> exclude_zero_eigenvalue()
   end
 
   def eigenvalue_algebra(_a) do
@@ -1469,12 +1469,19 @@ defmodule MatrixOperation do
     [s, u, v]
   end
 
-  defp exclude_zero(list) do
-    list2 = Enum.map(list, & zero_approximation(&1))
-    list_len = length(list)
-    zero_list = Enum.to_list(1..list_len)
+  defp exclude_zero_eigenvalue(eigenvalues) do
+    eigenvalues2 = Enum.map(eigenvalues, & zero_approximation(&1))
+    len = length(eigenvalues)
+    zero_list = Enum.to_list(1..len)
     |> Enum.map(& &1 * 0)
-    list2 -- zero_list
+    eigenvalues2 -- zero_list
+  end
+
+  defp exclude_zero_eigenvalue(eigenvalues, eigenvectors) do
+    eigenvalues2 = Enum.map(eigenvalues, & zero_approximation(&1))
+    eigens = Enum.zip(eigenvalues2, eigenvectors2)
+    |> Enum.map(fn {val, vec} -> if(val==0, do: nil, else: {val, vec}) end)
+    Enum.filter(eigens, & !is_nil(&1))
   end
 
   @doc """
@@ -1512,7 +1519,7 @@ defmodule MatrixOperation do
 
   defp eigenvalue(a, iter_num) do
     eigenvalue_sub(a, 0, iter_num)
-    |> exclude_zero()
+    |> exclude_zero_eigenvalue()
   end
 
   defp eigenvalue_sub(a, count, iter_num) when count != iter_num do
