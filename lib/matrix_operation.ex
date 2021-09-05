@@ -881,7 +881,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.eigenvalue_algebra([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
         [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
         iex> MatrixOperation.eigenvalue_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-        [3.0000000027003626, 0, 0.9999999918989121]
+        [3.0000000027003626, 0.9999999918989121]
     """
   # 2×2 algebra method
   def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
@@ -1020,6 +1020,22 @@ defmodule MatrixOperation do
     delta
   end
 
+  defp exclude_zero_eigenvalue(eigenvalues) do
+    eigenvalues2 = Enum.map(eigenvalues, & zero_approximation(&1))
+    len = length(eigenvalues)
+    zero_list = Enum.to_list(1..len)
+    |> Enum.map(& &1 * 0)
+    eigenvalues2 -- zero_list
+  end
+
+  defp exclude_zero_eigenvalue(eigenvalues, eigenvectors) do
+    Enum.map(eigenvalues, & zero_approximation(&1))
+    |> Enum.zip(eigenvectors)
+    |> Enum.map(fn {val, vec} -> if(val==0, do: nil, else: {val, vec}) end)
+    |> Enum.filter(& !is_nil(&1))
+    |> Enum.unzip()
+  end
+
   @doc """
     Matrix diagonalization using algebra method [R^2×R^2/R^3×R^3 matrix]
     #### Argument
@@ -1029,11 +1045,14 @@ defmodule MatrixOperation do
     #### Example
         iex> MatrixOperation.diagonalization_algebra([[1, 3], [4, 2]])
         [[5.0, 0], [0, -2.0]]
+        iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 5], [-1, 2, 1]])
+        [[-2.6170355131217935, 0, 0], [0, 4.1017849347870765, 0], [0, 0, 2.515250578334717]]
         iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-        [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
+        nil
     """
   def diagonalization_algebra(matrix) do
-    eigenvalue_algebra(matrix)
+    ev = eigenvalue_algebra(matrix)
+    if(length(ev)==length(matrix), do: ev, else: nil)
     |> diagonalization_algebra_condition()
   end
 
@@ -1071,7 +1090,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.jordan_normal_form([[7, 2], [-2, 3]])
         [[5.0, 1], [0, 5.0]]
         iex> MatrixOperation.jordan_normal_form([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-        [[3.0000000027003626, 0, 0], [0, 0, 0], [0, 0, 0.9999999918989121]]
+        nil
         iex> MatrixOperation.jordan_normal_form([[1, -1, 1], [0, 2, -2], [1, 1, 3]])
         [[2.0, 1, 0], [0, 2.0, 1], [0, 0, 2.0]]
         iex> MatrixOperation.jordan_normal_form([[3, 0, 1], [-1, 2, -1], [-1, 0, 1]])
@@ -1268,24 +1287,24 @@ defmodule MatrixOperation do
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
     #### Example
         iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
-        [
+        {
           [11.827601656659317, 3.5956497715829547, -0.42325142824210527],
           [
             [0.8892872578006493, -0.42761854121982545, -0.16220529066103917],
             [0.4179466723082325, 0.9038581385545962, -0.09143874712126684],
             [0.1857114757355589, 0.013522151221627882, 0.982511271796136]
           ]
-        ]
+        }
     """
   def jacobi(matrix, iter_num) do
     [pap, p] = jacobi_iteration(matrix, iter_num, 0, unit_matrix(length(matrix)))
     p_rnd = Enum.map(p, & Enum.map(&1, fn x -> zero_approximation(x) end))
 
-    eigenvalue_list = pap
+    pap
     |> Enum.with_index()
     |> Enum.map(& jacobi_sub4(&1))
     |> Enum.map(& zero_approximation(&1))
-    [eigenvalue_list, p_rnd]
+    |> exclude_zero_eigenvalue(p_rnd)
   end
 
   defp jacobi_iteration(matrix, iter_num, l, p_pre) when l != iter_num do
@@ -1446,10 +1465,10 @@ defmodule MatrixOperation do
   def svd_sub(a, a_t, iter_num) when length(a) <= length(a_t) do
     # U matrix
     aat = product(a, a_t)
-    [sv_sq, u] = jacobi(aat, iter_num)
+    {sv_sq, u} = jacobi(aat, iter_num)
     # V matirx
     ata = product(a_t, a)
-    [_, v] = jacobi(ata, iter_num)
+    {_, v} = jacobi(ata, iter_num)
     # Singular value
     s = Enum.map(sv_sq, & :math.sqrt(&1))
     # A = USV^t
@@ -1459,29 +1478,14 @@ defmodule MatrixOperation do
   def svd_sub(a, a_t, iter_num) do
     # U matrix
     aat = product(a, a_t)
-    [_, u] = jacobi(aat, iter_num)
+    {_, u} = jacobi(aat, iter_num)
     # V matirx
     ata = product(a_t, a)
-    [sv_sq, v] = jacobi(ata, iter_num)
+    {sv_sq, v} = jacobi(ata, iter_num)
     # Singular value
     s = Enum.map(sv_sq, & :math.sqrt(&1))
     # A = USV^t
     [s, u, v]
-  end
-
-  defp exclude_zero_eigenvalue(eigenvalues) do
-    eigenvalues2 = Enum.map(eigenvalues, & zero_approximation(&1))
-    len = length(eigenvalues)
-    zero_list = Enum.to_list(1..len)
-    |> Enum.map(& &1 * 0)
-    eigenvalues2 -- zero_list
-  end
-
-  defp exclude_zero_eigenvalue(eigenvalues, eigenvectors) do
-    eigenvalues2 = Enum.map(eigenvalues, & zero_approximation(&1))
-    eigens = Enum.zip(eigenvalues2, eigenvectors2)
-    |> Enum.map(fn {val, vec} -> if(val==0, do: nil, else: {val, vec}) end)
-    Enum.filter(eigens, & !is_nil(&1))
   end
 
   @doc """
@@ -1602,11 +1606,14 @@ defmodule MatrixOperation do
     #### Example
         iex> MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
         [[5.000000000000018, 0], [0, -1.999999999999997]]
+        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]], 100)
+        [[4.101784906061108, 0, 0], [0, -2.407882912725488, 0], [0, 0, 2.3060980066643952]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
-        [[3.000000000000001, 0, 0], [0, 1.0, 0], [0, 0, 0]]
+        nil
     """
   def diagonalization(a, iter_num) do
-    eigenvalue(a, iter_num)
+    ev = eigenvalue(a, iter_num)
+    if(length(ev)==length(a), do: ev, else: nil)
     |> diagonalization_condition()
     |> Enum.map(& Enum.map(&1, fn x -> zero_approximation(x) end))
   end
