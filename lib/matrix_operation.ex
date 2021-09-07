@@ -1420,40 +1420,43 @@ defmodule MatrixOperation do
   @doc """
     Singular Value Decomposition (SVD) using Jacobi method.
     #### Argument
-      - matrix: Matrix to adapt the SVD using the Jacobi method.
-      - iter_num: iteration number of the Jacobi method.
+      - matrix: Matrix to adapt the SVD by using the QR decomposition method.
+      - iter_num: iteration number of the QR decomposition method
     #### Output
       [Singular values, U-matrix, V-matrix]:
         Singular values, U-matrix and V-matrix.
         Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
-        [
+        {
           [1.0, 1.4142135623730951],
           [
-            [1.0, 0],
-            [0, 1.0]
+            [1.0000000000001104, 0.0],
+            [0.0, 1.0000000000001101]
           ],
           [
-            [1.0, 0, 0],
-            [0, 0.7071067458364744, -0.707106816536619]
+            [1.0000000000001104, 0.0, 0.0],
+            [0.0, 0.7071067811836627, 0.7071067811836627]
           ]
-        ]
+        }
         iex> MatrixOperation.svd([[1, 1], [1, -1], [1, 0]], 100)
-        [
+        {
           [1.7320508075688772, 1.4142135623730951],
           [
-            [0.5773502801797583, -0.7071067844665552, -0.4082482692403278],
-            [0.5773502563364761, 0.7071067779065389, -0.4082483143221047]
+            [0.5773502691779367, 0.5773502691779367, 0.5773502691779369],
+            [0.7071067811583637, -0.7071067811583637, 0.0]
           ],
-          [[1.0, 0], [0, 1.0]]
-        ]
+          [
+            [0.9999999999978897, 0.0],
+            [0.0, 1.0000000000001104]
+          ]
+        }
         iex> MatrixOperation.svd([[1, 1], [1, 1]], 100)
-        [
-          [1.9999999999999987],
-          [[0.7071067458364744, -0.707106816536619]],
-          [[0.7071067458364744, -0.707106816536619]]
-        ]
+        {
+          [1.9999999999999998],
+          [[0.7071067811786672, 0.7071067811786672]],
+          [[0.7071067811786672, 0.7071067811786672]]
+        }
     """
   def svd(a, iter_num) do
     a_t = transpose(a)
@@ -1463,27 +1466,27 @@ defmodule MatrixOperation do
   def svd_sub(a, a_t, iter_num) when length(a) <= length(a_t) do
     # U matrix
     aat = product(a, a_t)
-    {sv_sq, u} = jacobi(aat, iter_num)
+    {sv_sq, u} = eigen(aat, iter_num)
     # V matirx
     ata = product(a_t, a)
-    {_, v} = jacobi(ata, iter_num)
+    {_, v} = eigen(ata, iter_num)
     # Singular value
     s = Enum.map(sv_sq, & :math.sqrt(&1))
     # A = USV^t
-    [s, u, v]
+    {s, u, v}
   end
 
   def svd_sub(a, a_t, iter_num) do
     # U matrix
     aat = product(a, a_t)
-    {_, u} = jacobi(aat, iter_num)
+    {_, u} = eigen(aat, iter_num)
     # V matirx
     ata = product(a_t, a)
-    {sv_sq, v} = jacobi(ata, iter_num)
+    {sv_sq, v} = eigen(ata, iter_num)
     # Singular value
     s = Enum.map(sv_sq, & :math.sqrt(&1))
     # A = USV^t
-    [s, u, v]
+    {s, u, v}
   end
 
   @doc """
@@ -1496,14 +1499,14 @@ defmodule MatrixOperation do
       Eigenvalue is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
-        [
+        {
           [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
           [
             [0.4965997845719138, 0.577350269219531, 0.6481167492812222],
             [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
             [0.8095854617817337, -0.5773502692195656, -0.10600965431255223]
           ]
-        ]
+        }
     """
   def eigen(a, iter_num) do
     delta = 0.0001 # avoid division by zero
@@ -1516,7 +1519,7 @@ defmodule MatrixOperation do
       |> eigen_sub()
     )
     |> Enum.map(& const_multiple(delta, &1))
-    [eval, evec]
+    {eval, evec}
   end
 
   defp eigenvalue(a, iter_num) do
