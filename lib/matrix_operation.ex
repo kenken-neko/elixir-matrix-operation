@@ -1036,7 +1036,7 @@ defmodule MatrixOperation do
     |> Enum.unzip()
   end
 
-  @doc """
+  """
     Matrix diagonalization using algebra method [R^2×R^2/R^3×R^3 matrix]
     #### Argument
       - matrix: R^2×R^2/R^3×R^3 matrix. Target matrix to be diagonalized.
@@ -1050,7 +1050,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
     """
-  def diagonalization_algebra(matrix) do
+  defp diagonalization_algebra(matrix) do
     ev = eigenvalue_algebra(matrix)
     if(length(ev)==length(matrix), do: ev, else: nil)
     |> diagonalization_algebra_condition()
