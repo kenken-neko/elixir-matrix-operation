@@ -1496,8 +1496,12 @@ defmodule MatrixOperation do
   #### Output
     Moore-Penrose general inverse matrix
   #### Example
-      iex> MatrixOperation.general_inverse_matrix([[1, -1, 1], [1, 1, -1], [-1, 1, 1], [1, 1, 1]], 100)
-      [[-1.0, -1.0, 0.0], [-1.0, 0.0, -1.0], [-3.0, -1.0, -1.0]]
+      iex> MatrixOperation.general_inverse_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 10000)
+      [
+        [-0.6388888906343634, -0.1666666672311935, 0.30555555617197794],
+        [-0.05555555576319713, -1.4600299441669407e-10, 0.05555555547119129],
+        [0.5277777791079676, 0.16666666693918708, -0.19444444522959473]
+      ]
   """
   def general_inverse_matrix(matrix, iter_num) do
     svd(matrix, iter_num)
