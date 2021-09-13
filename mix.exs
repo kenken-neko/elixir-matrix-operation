@@ -4,7 +4,7 @@ defmodule MatrixOperation.MixProject do
   def project do
     [
       app: :matrix_operation,
-      version: "0.4.1",
+      version: "0.4.2",
       elixir: "~> 1.7",
       description: "Matrix operation library",
       start_permanent: Mix.env() == :prod,

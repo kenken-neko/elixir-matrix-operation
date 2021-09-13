@@ -1234,22 +1234,22 @@ defmodule MatrixOperation do
     Power iteration method (maximum eigen value and eigen vector)
     #### Argument
       - matrix: Matrix to adapt the power iteration method.
-      - iter_num: iteration number of the power iteration method.
+      - iter_num: iteration number of the power iteration method. The default value is 100.
     #### Output
       Maximum eigen value and eigen vector
     #### Example
-        iex> MatrixOperation.power_iteration([[3, 1], [2, 2]], 100)
+        iex> MatrixOperation.power_iteration([[3, 1], [2, 2]])
         [
           4.0,
           [2.8284271247461903, 2.8284271247461903]
         ]
-        iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]], 100)
+        iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]])
         [
           3.0,
           [1.0, -2.0, 2.0]
         ]
     """
-  def power_iteration(matrix, iter_num) do
+  def power_iteration(matrix, iter_num \\ 100) do
     init_vec = random_column(length(matrix))
     xk_pre = power_iteration_sub(matrix, init_vec, iter_num)
     # eigen vector
@@ -1282,11 +1282,11 @@ defmodule MatrixOperation do
     Calculate eigenvalues and eigenvectors by using Jacobi method
     #### Argument
       - matrix: Matrix to adapt the power iteration method.
-      - iter_num: iteration number of the power iteration method.
+      - iter_num: iteration number of the power iteration method. The default value is 100.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
     #### Example
-        iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]], 100)
+        iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]])
         {
           [11.827601656659317, 3.5956497715829547, -0.42325142824210527],
           [
@@ -1296,7 +1296,7 @@ defmodule MatrixOperation do
           ]
         }
     """
-  def jacobi(matrix, iter_num) do
+  def jacobi(matrix, iter_num \\ 100) do
     [pap, p] = jacobi_iteration(matrix, iter_num, 0, unit_matrix(length(matrix)))
     p_rnd = Enum.map(p, & Enum.map(&1, fn x -> zero_approximation(x) end))
 
@@ -1421,13 +1421,13 @@ defmodule MatrixOperation do
     Singular Value Decomposition (SVD) using Jacobi method.
     #### Argument
       - matrix: Matrix to adapt the SVD by using the QR decomposition method.
-      - iter_num: iteration number of the QR decomposition method
+      - iter_num: iteration number of the QR decomposition method. The default value is 100.
     #### Output
       [Singular values, U-matrix, V-matrix]:
         Singular values, U-matrix and V-matrix.
         Singular value is a non-trivial value other than zero.
     #### Example
-        iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]], 100)
+        iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]])
         {
           [1.0, 1.4142135623730951],
           [
@@ -1439,7 +1439,7 @@ defmodule MatrixOperation do
             [0.0, 0.7071067811836627, 0.7071067811836627]
           ]
         }
-        iex> MatrixOperation.svd([[1, 1], [1, -1], [1, 0]], 100)
+        iex> MatrixOperation.svd([[1, 1], [1, -1], [1, 0]])
         {
           [1.7320508075688772, 1.4142135623730951],
           [
@@ -1451,14 +1451,14 @@ defmodule MatrixOperation do
             [0.0, 1.0000000000001104]
           ]
         }
-        iex> MatrixOperation.svd([[1, 1], [1, 1]], 100)
+        iex> MatrixOperation.svd([[1, 1], [1, 1]])
         {
           [1.9999999999999998],
           [[0.7071067811786672, 0.7071067811786672]],
           [[0.7071067811786672, 0.7071067811786672]]
         }
     """
-  def svd(a, iter_num) do
+  def svd(a, iter_num \\ 100) do
     a_t = transpose(a)
     svd_sub(a, a_t, iter_num)
   end
@@ -1601,18 +1601,18 @@ defmodule MatrixOperation do
     Matrix diagonalization using the QR decomposition.
     #### Argument
       - a: Matrix to be diagonalized by using the QR decomposition.
-      - iter_num: iteration number of the QR decomposition.
+      - iter_num: iteration number of the QR decomposition. The default value is 100.
     #### Output
       Diagonalized matrix
     #### Example
-        iex> MatrixOperation.diagonalization([[1, 3], [4, 2]], 100)
+        iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
         [[5.000000000000018, 0], [0, -1.999999999999997]]
-        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]], 100)
+        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]])
         [[4.101784906061108, 0, 0], [0, -2.407882912725488, 0], [0, 0, 2.3060980066643952]]
-        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
+        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
     """
-  def diagonalization(a, iter_num) do
+  def diagonalization(a, iter_num \\ 100) do
     ev = eigenvalue(a, iter_num)
     if(length(ev)==length(a), do: ev, else: nil)
     |> diagonalization_condition()
@@ -1645,14 +1645,14 @@ defmodule MatrixOperation do
     Calculate singular Value by using QR decomposition.
     #### Argument
       - a: Matrix to calculate singular values.
-      - iter_num: iteration number of the QR decomposition.
+      - iter_num: iteration number of the QR decomposition. The default value is 100.
     #### Output
       Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
-        iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]], 100)
+        iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]])
         [14.912172620559879, 4.236463407782015, 1.6369134152873956]
     """
-  def singular_value(a, iter_num) do
+  def singular_value(a, iter_num \\ 100) do
     a
     |> transpose()
     |> product(a)
@@ -1663,12 +1663,12 @@ defmodule MatrixOperation do
   @doc """
     Calculate the rank of a matrix by using QR decomposition
     #### Example
-        iex> MatrixOperation.rank([[2, 3, 4], [1, 4, 2], [2, 1, 4]], 100)
+        iex> MatrixOperation.rank([[2, 3, 4], [1, 4, 2], [2, 1, 4]])
         2
-        iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]], 100)
+        iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]])
         3
     """
-  def rank(matrix, iter_num) do
+  def rank(matrix, iter_num \\ 100) do
     matrix
     |> singular_value(iter_num)
     |> count_finite_values()
