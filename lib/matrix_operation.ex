@@ -386,38 +386,6 @@ defmodule MatrixOperation do
        do: output
 
   @doc """
-    Linear equations are solved by Cramer's rule.
-    #### Argument
-      - matrix: Target matrix to solve linear equations.
-      - vertical_vec: Vertical vector to solve linear equations.
-    #### Output
-      Solutions of the linear equations
-    #### Example
-        iex> MatrixOperation.linear_equations_cramer([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
-        [1.0, 0.0, 0.0]
-        iex> MatrixOperation.linear_equations_cramer([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
-        [1.0, 0.0, 0.0]
-    """
-  def linear_equations_cramer(matrix, vertical_vec) do
-    # check the setupufficient condition
-    if determinant(matrix) == 0 do
-      nil
-    else
-      [t] = transpose(vertical_vec)
-      linear_equations_cramer_sub(matrix, t, 0, [])
-    end
-  end
-
-  defp linear_equations_cramer_sub(matrix, t, i, output) when i < length(matrix) do
-    vertical_vec = transpose([t])
-    linear_equations_cramer_sub(matrix, t, i + 1, output ++ [cramer(matrix, vertical_vec, i + 1)])
-  end
-
-  defp linear_equations_cramer_sub(matrix, _t, i, output) when i == length(matrix) do
-    output
-  end
-
-  @doc """
     Leading principal minor is generetaed.
     #### Argument
       - matrix: Target matrix to find leading principal minor.
@@ -438,7 +406,6 @@ defmodule MatrixOperation do
     LU decomposition
     #### Argument
       - matrix: Target matrix to solve LU decomposition.
-
     #### Output
       [L, U]: L(U) is L(U)-matrix of LU decomposition.
     #### Example
@@ -529,27 +496,27 @@ defmodule MatrixOperation do
   @doc """
     Linear equations are solved by LU decomposition.
     #### Argument
-      - matrix: Target matrix to solve linear equations.
+      - matrix: Target matrix to solve simultaneous linear equations.
       - vertical_vec: Vertical vector to solve linear equations.
     #### Output
       Solutions of the linear equations
     #### Example
-        iex> MatrixOperation.linear_equations_direct([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
+        iex> MatrixOperation.solve_sle([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[1], [0], [0]])
         [1.0, 0.0, 0.0]
-        iex> MatrixOperation.linear_equations_direct([[4, 1, 1], [1, 3, 1], [2, 1, 5]], [[9], [10], [19]])
+        iex> MatrixOperation.solve_sle([[4, 1, 1], [1, 3, 1], [2, 1, 5]], [[9], [10], [19]])
         [1.0, 2.0, 3.0]
     """
-  def linear_equations_direct(matrix, vertical_vec) do
+  def solve_sle(matrix, vertical_vec) do
     # check the setupufficient condition
     if determinant(matrix) == 0 do
       nil
     else
       [t] = transpose(vertical_vec)
-      linear_equations_direct_sub(matrix, t)
+      solve_sle_sub(matrix, t)
     end
   end
 
-  defp linear_equations_direct_sub(matrix, t) do
+  defp solve_sle_sub(matrix, t) do
     [l_matrix, u_matrix] = lu_decomposition(matrix)
     dim = length(l_matrix)
     y = forward_substitution(l_matrix, t, [], 0, dim)
