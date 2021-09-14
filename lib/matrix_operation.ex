@@ -1236,17 +1236,17 @@ defmodule MatrixOperation do
       - matrix: Matrix to adapt the power iteration method.
       - iter_num: iteration number of the power iteration method. The default value is 100.
     #### Output
-      Maximum eigen value and eigen vector
+      Maximum eigenvalue and normalized eigenvector corresponding to the maximum eigenvalue
     #### Example
         iex> MatrixOperation.power_iteration([[3, 1], [2, 2]])
         [
           4.0,
-          [2.8284271247461903, 2.8284271247461903]
+          [0.7071067811865476, 0.7071067811865476]
         ]
         iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]])
         [
           3.0,
-          [1.0, -2.0, 2.0]
+          [0.3333333333333333, -0.6666666666666666, 0.6666666666666666]
         ]
     """
   def power_iteration(matrix, iter_num \\ 100) do
@@ -1257,7 +1257,9 @@ defmodule MatrixOperation do
     [xk_pre_vec] = transpose(xk_pre)
     # eigen value
     eigen_value = inner_product(xk_vec, xk_vec) / inner_product(xk_vec, xk_pre_vec)
-    [eigen_value, xk_vec]
+    norm_xk_vec = :math.sqrt(inner_product(xk_vec, xk_vec))
+    normalized_eigen_vec = Enum.map(xk_vec, & &1/norm_xk_vec)
+    [eigen_value, normalized_eigen_vec]
   end
 
   defp random_column(num) when num > 1 do
@@ -1431,31 +1433,32 @@ defmodule MatrixOperation do
         {
           [1.0, 1.4142135623730951],
           [
-            [1.0000000000001104, 0.0],
-            [0.0, 1.0000000000001101]
+            [1.0, 0.0],
+            [0.0, 1.0]
           ],
           [
-            [1.0000000000001104, 0.0, 0.0],
-            [0.0, 0.7071067811836627, 0.7071067811836627]
+            [1.0, 0.0, 0.0],
+            [0.0, 0.7071067811865476, 0.7071067811865476]
           ]
         }
         iex> MatrixOperation.svd([[1, 1], [1, -1], [1, 0]])
         {
           [1.7320508075688772, 1.4142135623730951],
           [
-            [0.5773502691779367, 0.5773502691779367, 0.5773502691779369],
-            [0.7071067811583637, -0.7071067811583637, 0.0]
+            [0.5773502691896257, 0.5773502691896257, 0.5773502691896258],
+            [0.7071067811865476, -0.7071067811865476, 0.0]
           ],
-          [
-            [0.9999999999978897, 0.0],
-            [0.0, 1.0000000000001104]
-          ]
+          [[1.0, 0.0], [0.0, 1.0]]
         }
         iex> MatrixOperation.svd([[1, 1], [1, 1]])
         {
           [1.9999999999999998],
-          [[0.7071067811786672, 0.7071067811786672]],
-          [[0.7071067811786672, 0.7071067811786672]]
+          [
+            [0.7071067811865476, 0.7071067811865476]
+          ],
+          [
+            [0.7071067811865476, 0.7071067811865476]
+          ]
         }
     """
   def svd(a, iter_num \\ 100) do
@@ -1502,9 +1505,9 @@ defmodule MatrixOperation do
         {
           [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
           [
-            [0.4965997845719138, 0.577350269219531, 0.6481167492812222],
-            [0.31298567717874254, 0.5773502691622936, -0.7541264035190053],
-            [0.8095854617817337, -0.5773502692195656, -0.10600965431255223]
+            [0.49659978454619125, 0.5773502691896257, 0.6481167492476514],
+            [-0.3129856771935595, -0.5773502691896257, 0.7541264035547063],
+            [0.8095854617397507, -0.5773502691896256, -0.10600965430705483]
           ]
         }
     """
@@ -1518,7 +1521,6 @@ defmodule MatrixOperation do
       |> power_iteration(iter_num)
       |> eigen_sub()
     )
-    |> Enum.map(& const_multiple(delta, &1))
     {eval, evec}
   end
 
