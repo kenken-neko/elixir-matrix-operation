@@ -1003,7 +1003,7 @@ defmodule MatrixOperation do
     |> Enum.unzip()
   end
 
-  @doc """
+  """
     Matrix diagonalization using algebra method [R^2×R^2/R^3×R^3 matrix]
     #### Argument
       - matrix: R^2×R^2/R^3×R^3 matrix. Target matrix to be diagonalized.
@@ -1017,7 +1017,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
     """
-  def diagonalization_algebra(matrix) do
+  defp diagonalization_algebra(matrix) do
     ev = eigenvalue_algebra(matrix)
     if(length(ev)==length(matrix), do: ev, else: nil)
     |> diagonalization_algebra_condition()
@@ -1580,6 +1580,16 @@ defmodule MatrixOperation do
         [[4.101784906061108, 0, 0], [0, -2.407882912725488, 0], [0, 0, 2.3060980066643952]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
+        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
+        nil
+        iex> MatrixOperation.diagonalization([[16, -1, 1, 2, 3], [2, 12, 1, 5, 6], [1, 3, -24, 8, 9], [3, 4, 9, 1, 23], [5, 3, 1, 2, 1]], 100)
+        [
+          [-26.608939297937113, 0, 0, 0, 0],
+          [0, 20.4243649343814, 0, 0, 0],
+          [0, 0, 14.665793374162595, 0, 0],
+          [0, 0, 0, -3.547766546408004, 0],
+          [0, 0, 0, 0, 1.0665475358009557]
+        ]
     """
   def diagonalization(a, iter_num \\ 100) do
     ev = eigenvalue(a, iter_num)
