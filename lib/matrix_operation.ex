@@ -407,13 +407,13 @@ defmodule MatrixOperation do
     #### Argument
       - matrix: Target matrix to solve LU decomposition.
     #### Output
-      [L, U]: L(U) is L(U)-matrix of LU decomposition.
+      {L, U}. L(U) is L(U)-matrix of LU decomposition.
     #### Example
         iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
-        [
+        {
           [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
           [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
-        ]
+        }
     """
   def lu_decomposition(matrix) do
     {row_num, col_num} = size(matrix)
@@ -456,7 +456,7 @@ defmodule MatrixOperation do
   end
 
   defp lu_decomposition_sub(_matrix, _k, _matrix_len, l_matrix, u_matrix) do
-    [transpose(l_matrix), u_matrix]
+    {transpose(l_matrix), u_matrix}
   end
 
   defp l_cal(t_matrix, k, matrix_len, l_matrix, u_matrix) do
@@ -517,7 +517,7 @@ defmodule MatrixOperation do
   end
 
   defp solve_sle_sub(matrix, t) do
-    [l_matrix, u_matrix] = lu_decomposition(matrix)
+    {l_matrix, u_matrix} = lu_decomposition(matrix)
     dim = length(l_matrix)
     y = forward_substitution(l_matrix, t, [], 0, dim)
     backward_substitution(u_matrix, y, [], dim, dim)
@@ -842,18 +842,19 @@ defmodule MatrixOperation do
       Eigenvalues which is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.eigenvalue_algebra([[3, 1], [2, 2]])
-        [4.0, 1.0]
+        {4.0, 1.0}
         iex> MatrixOperation.eigenvalue_algebra([[6, -3], [4, -1]])
-        [3.0, 2.0]
+        {3.0, 2.0}
         iex> MatrixOperation.eigenvalue_algebra([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
-        [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
+        {4.561552806429505, 0.43844714673139706, 1.0000000468390973}
         iex> MatrixOperation.eigenvalue_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-        [3.0000000027003626, 0.9999999918989121]
+        {3.0000000027003626, 0.9999999918989121}
     """
   # 2×2 algebra method
   def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
     quadratic_formula(1, -a11 - a22, a11 * a22 - a12 * a21)
     |> exclude_zero_eigenvalue()
+    |> List.to_tuple()
   end
 
   # 3×3 algebratic method
@@ -868,6 +869,7 @@ defmodule MatrixOperation do
     dis = -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d - 4 * b * b * b * d
     if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
     |> exclude_zero_eigenvalue()
+    |> List.to_tuple()
   end
 
   def eigenvalue_algebra(_a) do
@@ -1003,7 +1005,7 @@ defmodule MatrixOperation do
     |> Enum.unzip()
   end
 
-  """
+  @doc """
     Matrix diagonalization using algebra method [R^2×R^2/R^3×R^3 matrix]
     #### Argument
       - matrix: R^2×R^2/R^3×R^3 matrix. Target matrix to be diagonalized.
@@ -1017,8 +1019,10 @@ defmodule MatrixOperation do
         iex> MatrixOperation.diagonalization_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
     """
-  defp diagonalization_algebra(matrix) do
-    ev = eigenvalue_algebra(matrix)
+  def diagonalization_algebra(matrix) do
+    ev = matrix
+    |> eigenvalue_algebra()
+    |> Tuple.to_list()
     if(length(ev)==length(matrix), do: ev, else: nil)
     |> diagonalization_algebra_condition()
   end
@@ -1206,15 +1210,15 @@ defmodule MatrixOperation do
       Maximum eigenvalue and normalized eigenvector corresponding to the maximum eigenvalue
     #### Example
         iex> MatrixOperation.power_iteration([[3, 1], [2, 2]])
-        [
+        {
           4.0,
           [0.7071067811865476, 0.7071067811865476]
-        ]
+        }
         iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]])
-        [
+        {
           3.0,
           [0.3333333333333333, -0.6666666666666666, 0.6666666666666666]
-        ]
+        }
     """
   def power_iteration(matrix, iter_num \\ 100) do
     init_vec = random_column(length(matrix))
@@ -1226,7 +1230,7 @@ defmodule MatrixOperation do
     eigen_value = inner_product(xk_vec, xk_vec) / inner_product(xk_vec, xk_pre_vec)
     norm_xk_vec = :math.sqrt(inner_product(xk_vec, xk_vec))
     normalized_eigen_vec = Enum.map(xk_vec, & &1/norm_xk_vec)
-    [eigen_value, normalized_eigen_vec]
+    {eigen_value, normalized_eigen_vec}
   end
 
   defp random_column(num) when num > 1 do
@@ -1480,15 +1484,15 @@ defmodule MatrixOperation do
     """
   def eigen(a, iter_num) do
     delta = 0.0001 # avoid division by zero
-    eval = eigenvalue(a, iter_num)
-    evec = eval
+    evals = eigenvalue(a, iter_num)
+    evecs = evals
     |> Enum.map(
       & eigenvalue_shift(a, -&1+delta)
       |> inverse_matrix()
       |> power_iteration(iter_num)
-      |> eigen_sub()
+      |> extract_second()
     )
-    {eval, evec}
+    {evals, evecs}
   end
 
   defp eigenvalue(a, iter_num) do
@@ -1561,8 +1565,7 @@ defmodule MatrixOperation do
     add(a, b)
   end
 
-  defp eigen_sub(a) do
-    [_first, second] = a
+  defp extract_second({_first, second}) do
     second
   end
 
@@ -1580,16 +1583,6 @@ defmodule MatrixOperation do
         [[4.101784906061108, 0, 0], [0, -2.407882912725488, 0], [0, 0, 2.3060980066643952]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
-        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
-        nil
-        iex> MatrixOperation.diagonalization([[16, -1, 1, 2, 3], [2, 12, 1, 5, 6], [1, 3, -24, 8, 9], [3, 4, 9, 1, 23], [5, 3, 1, 2, 1]], 100)
-        [
-          [-26.608939297937113, 0, 0, 0, 0],
-          [0, 20.4243649343814, 0, 0, 0],
-          [0, 0, 14.665793374162595, 0, 0],
-          [0, 0, 0, -3.547766546408004, 0],
-          [0, 0, 0, 0, 1.0665475358009557]
-        ]
     """
   def diagonalization(a, iter_num \\ 100) do
     ev = eigenvalue(a, iter_num)
@@ -1629,7 +1622,7 @@ defmodule MatrixOperation do
       Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]])
-        [14.912172620559879, 4.236463407782015, 1.6369134152873956]
+        {14.912172620559879, 4.236463407782015, 1.6369134152873956}
     """
   def singular_value(a, iter_num \\ 100) do
     a
@@ -1637,6 +1630,7 @@ defmodule MatrixOperation do
     |> product(a)
     |> eigenvalue(iter_num)
     |> Enum.map(& :math.sqrt(&1))
+    |> List.to_tuple()
   end
 
   @doc """
@@ -1650,6 +1644,7 @@ defmodule MatrixOperation do
   def rank(matrix, iter_num \\ 100) do
     matrix
     |> singular_value(iter_num)
+    |> Tuple.to_list()
     |> count_finite_values()
   end
 
@@ -1721,6 +1716,7 @@ defmodule MatrixOperation do
   def two_norm(a) do
     a
     |> singular_value(100)
+    |> Tuple.to_list()
     |> Enum.max()
   end
 
