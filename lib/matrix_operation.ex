@@ -1650,26 +1650,15 @@ defmodule MatrixOperation do
         2
         iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]])
         3
+        iex> input = [[2, 3, 4, 3], [1, 42, 2, 11], [2, 1, 4, 4], [3, 7, 2, 2], [35, 6, 4, 6], [7, 23, 5, 2]]
+        iex> MatrixOperation.rank(input)
+        4
     """
   def rank(matrix, iter_num \\ 100) do
     matrix
     |> singular_value(iter_num)
     |> Tuple.to_list()
-    |> count_finite_values()
-  end
-
-  defp count_finite_values(x) when is_list(x) do
-    x
-    |> Enum.map(&count_finite_values(&1))
-    |> Enum.sum()
-  end
-
-  defp count_finite_values(x) when is_number(x) and x == 0 do
-    0
-  end
-
-  defp count_finite_values(x) when is_number(x) do
-    1
+    |> length()
   end
 
   @doc """
