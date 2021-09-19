@@ -407,13 +407,13 @@ defmodule MatrixOperation do
     #### Argument
       - matrix: Target matrix to solve LU decomposition.
     #### Output
-      [L, U]: L(U) is L(U)-matrix of LU decomposition.
+      {L, U}. L(U) is L(U)-matrix of LU decomposition.
     #### Example
         iex> MatrixOperation.lu_decomposition([[1, 1, 0, 3], [2, 1, -1, 1], [3, -1, -1, 2], [-1, 2, 3, -1]])
-        [
+        {
           [[1, 0, 0, 0], [2.0, 1, 0, 0], [3.0, 4.0, 1, 0], [-1.0, -3.0, 0.0, 1]],
           [[1, 1, 0, 3], [0, -1.0, -1.0, -5.0], [0, 0, 3.0, 13.0], [0, 0, 0, -13.0]]
-        ]
+        }
     """
   def lu_decomposition(matrix) do
     {row_num, col_num} = size(matrix)
@@ -456,7 +456,7 @@ defmodule MatrixOperation do
   end
 
   defp lu_decomposition_sub(_matrix, _k, _matrix_len, l_matrix, u_matrix) do
-    [transpose(l_matrix), u_matrix]
+    {transpose(l_matrix), u_matrix}
   end
 
   defp l_cal(t_matrix, k, matrix_len, l_matrix, u_matrix) do
@@ -517,7 +517,7 @@ defmodule MatrixOperation do
   end
 
   defp solve_sle_sub(matrix, t) do
-    [l_matrix, u_matrix] = lu_decomposition(matrix)
+    {l_matrix, u_matrix} = lu_decomposition(matrix)
     dim = length(l_matrix)
     y = forward_substitution(l_matrix, t, [], 0, dim)
     backward_substitution(u_matrix, y, [], dim, dim)
@@ -842,18 +842,19 @@ defmodule MatrixOperation do
       Eigenvalues which is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.eigenvalue_algebra([[3, 1], [2, 2]])
-        [4.0, 1.0]
+        {4.0, 1.0}
         iex> MatrixOperation.eigenvalue_algebra([[6, -3], [4, -1]])
-        [3.0, 2.0]
+        {3.0, 2.0}
         iex> MatrixOperation.eigenvalue_algebra([[1, 1, 1], [1, 2, 1], [1, 2, 3]])
-        [4.561552806429505, 0.43844714673139706, 1.0000000468390973]
+        {4.561552806429505, 0.43844714673139706, 1.0000000468390973}
         iex> MatrixOperation.eigenvalue_algebra([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
-        [3.0000000027003626, 0.9999999918989121]
+        {3.0000000027003626, 0.9999999918989121}
     """
   # 2×2 algebra method
   def eigenvalue_algebra([[a11, a12], [a21, a22]]) do
     quadratic_formula(1, -a11 - a22, a11 * a22 - a12 * a21)
     |> exclude_zero_eigenvalue()
+    |> List.to_tuple()
   end
 
   # 3×3 algebratic method
@@ -868,6 +869,7 @@ defmodule MatrixOperation do
     dis = -4 * a * c * c * c - 27 * a * a * d * d + b * b * c * c + 18 * a * b * c * d - 4 * b * b * b * d
     if(dis > 0, do: cubic_formula(a, b, c, d), else: nil)
     |> exclude_zero_eigenvalue()
+    |> List.to_tuple()
   end
 
   def eigenvalue_algebra(_a) do
@@ -1018,7 +1020,9 @@ defmodule MatrixOperation do
         nil
     """
   defp diagonalization_algebra(matrix) do
-    ev = eigenvalue_algebra(matrix)
+    ev = matrix
+    |> eigenvalue_algebra()
+    |> Tuple.to_list()
     if(length(ev)==length(matrix), do: ev, else: nil)
     |> diagonalization_algebra_condition()
   end
@@ -1201,22 +1205,22 @@ defmodule MatrixOperation do
     Power iteration method (maximum eigen value and eigen vector)
     #### Argument
       - matrix: Matrix to adapt the power iteration method.
-      - iter_num: iteration number of the power iteration method. The default value is 100.
+      - iter_num: iteration number of the power iteration method. The default value is 1000.
     #### Output
       Maximum eigenvalue and normalized eigenvector corresponding to the maximum eigenvalue
     #### Example
         iex> MatrixOperation.power_iteration([[3, 1], [2, 2]])
-        [
+        {
           4.0,
           [0.7071067811865476, 0.7071067811865476]
-        ]
+        }
         iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]])
-        [
+        {
           3.0,
           [0.3333333333333333, -0.6666666666666666, 0.6666666666666666]
-        ]
+        }
     """
-  def power_iteration(matrix, iter_num \\ 100) do
+  def power_iteration(matrix, iter_num \\ 1000) do
     init_vec = random_column(length(matrix))
     xk_pre = power_iteration_sub(matrix, init_vec, iter_num)
     # eigen vector
@@ -1226,7 +1230,7 @@ defmodule MatrixOperation do
     eigen_value = inner_product(xk_vec, xk_vec) / inner_product(xk_vec, xk_pre_vec)
     norm_xk_vec = :math.sqrt(inner_product(xk_vec, xk_vec))
     normalized_eigen_vec = Enum.map(xk_vec, & &1/norm_xk_vec)
-    [eigen_value, normalized_eigen_vec]
+    {eigen_value, normalized_eigen_vec}
   end
 
   defp random_column(num) when num > 1 do
@@ -1251,21 +1255,21 @@ defmodule MatrixOperation do
     Calculate eigenvalues and eigenvectors by using Jacobi method
     #### Argument
       - matrix: Matrix to adapt the power iteration method.
-      - iter_num: iteration number of the power iteration method. The default value is 100.
+      - iter_num: iteration number of the power iteration method. The default value is 1000.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
     #### Example
         iex> MatrixOperation.jacobi([[10, 3, 2], [3, 5, 1], [2, 1, 0]])
         {
-          [11.827601656659317, 3.5956497715829547, -0.42325142824210527],
+          [11.827601656660915, 3.5956497715829547, -0.42325142824210527],
           [
-            [0.8892872578006493, -0.42761854121982545, -0.16220529066103917],
-            [0.4179466723082325, 0.9038581385545962, -0.09143874712126684],
-            [0.1857114757355589, 0.013522151221627882, 0.982511271796136]
+            [0.8892872578006493, -0.42761854121985043, -0.16220529066103917],
+            [0.4179466723082575, 0.9038581385546461, -0.09143874712126684],
+            [0.1857114757355714, 0.013522151221627882, 0.982511271796136]
           ]
         }
     """
-  def jacobi(matrix, iter_num \\ 100) do
+  def jacobi(matrix, iter_num \\ 1000) do
     [pap, p] = jacobi_iteration(matrix, iter_num, 0, unit_matrix(length(matrix)))
     p_rnd = Enum.map(p, & Enum.map(&1, fn x -> zero_approximation(x) end))
 
@@ -1390,7 +1394,7 @@ defmodule MatrixOperation do
     Singular Value Decomposition (SVD) using Jacobi method.
     #### Argument
       - matrix: Matrix to adapt the SVD by using the QR decomposition method.
-      - iter_num: iteration number of the QR decomposition method. The default value is 100.
+      - iter_num: iteration number of the QR decomposition method. The default value is 1000.
     #### Output
       [Singular values, U-matrix, V-matrix]:
         Singular values, U-matrix and V-matrix.
@@ -1405,7 +1409,7 @@ defmodule MatrixOperation do
           ],
           [
             [1.0, 0.0, 0.0],
-            [0.0, 0.7071067811865476, 0.7071067811865476]
+            [0.0, 0.7071067811865475, 0.7071067811865475]
           ]
         }
         iex> MatrixOperation.svd([[1, 1], [1, -1], [1, 0]])
@@ -1428,7 +1432,7 @@ defmodule MatrixOperation do
           ]
         }
     """
-  def svd(a, iter_num \\ 100) do
+  def svd(a, iter_num \\ 1000) do
     a_t = transpose(a)
     svd_sub(a, a_t, iter_num)
   end
@@ -1463,12 +1467,12 @@ defmodule MatrixOperation do
     Calculate eigenvalues and eigenvectors by using QR decomposition.
     #### Argument
       - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
-      - iter_num: iteration number of the QR decomposition.
+      - iter_num: iteration number of the QR decomposition.  The default value is 1000.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
       Eigenvalue is a non-trivial value other than zero.
     #### Example
-        iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]], 500)
+        iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
           [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
           [
@@ -1478,17 +1482,17 @@ defmodule MatrixOperation do
           ]
         }
     """
-  def eigen(a, iter_num) do
+  def eigen(a, iter_num \\ 1000) do
     delta = 0.0001 # avoid division by zero
-    eval = eigenvalue(a, iter_num)
-    evec = eval
+    evals = eigenvalue(a, iter_num)
+    evecs = evals
     |> Enum.map(
       & eigenvalue_shift(a, -&1+delta)
       |> inverse_matrix()
       |> power_iteration(iter_num)
-      |> eigen_sub()
+      |> extract_second()
     )
-    {eval, evec}
+    {evals, evecs}
   end
 
   defp eigenvalue(a, iter_num) do
@@ -1561,8 +1565,7 @@ defmodule MatrixOperation do
     add(a, b)
   end
 
-  defp eigen_sub(a) do
-    [_first, second] = a
+  defp extract_second({_first, second}) do
     second
   end
 
@@ -1570,14 +1573,14 @@ defmodule MatrixOperation do
     Matrix diagonalization using the QR decomposition.
     #### Argument
       - a: Matrix to be diagonalized by using the QR decomposition.
-      - iter_num: iteration number of the QR decomposition. The default value is 100.
+      - iter_num: iteration number of the QR decomposition. The default value is 1000.
     #### Output
       Diagonalized matrix
     #### Example
         iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
         [[5.000000000000018, 0], [0, -1.999999999999997]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]])
-        [[4.101784906061108, 0, 0], [0, -2.407882912725488, 0], [0, 0, 2.3060980066643952]]
+        [[4.101784906061108, 0, 0], [0, -2.6170355220017694, 0], [0, 0, 2.515250615940715]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
@@ -1591,7 +1594,7 @@ defmodule MatrixOperation do
           [0, 0, 0, 0, 1.0665475358009557]
         ]
     """
-  def diagonalization(a, iter_num \\ 100) do
+  def diagonalization(a, iter_num \\ 1000) do
     ev = eigenvalue(a, iter_num)
     if(length(ev)==length(a), do: ev, else: nil)
     |> diagonalization_condition()
@@ -1624,19 +1627,20 @@ defmodule MatrixOperation do
     Calculate singular Value by using QR decomposition.
     #### Argument
       - a: Matrix to calculate singular values.
-      - iter_num: iteration number of the QR decomposition. The default value is 100.
+      - iter_num: iteration number of the QR decomposition. The default value is 1000.
     #### Output
       Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]])
-        [14.912172620559879, 4.236463407782015, 1.6369134152873956]
+        {14.912172620559879, 4.236463407782015, 1.6369134152873956}
     """
-  def singular_value(a, iter_num \\ 100) do
+  def singular_value(a, iter_num \\ 1000) do
     a
     |> transpose()
     |> product(a)
     |> eigenvalue(iter_num)
     |> Enum.map(& :math.sqrt(&1))
+    |> List.to_tuple()
   end
 
   @doc """
@@ -1646,25 +1650,15 @@ defmodule MatrixOperation do
         2
         iex> MatrixOperation.rank([[2, 3, 4, 2], [1, 4, 2, 3], [2, 1, 4, 4]])
         3
+        iex> input = [[2, 3, 4, 3], [1, 42, 2, 11], [2, 1, 4, 4], [3, 7, 2, 2], [35, 6, 4, 6], [7, 23, 5, 2]]
+        iex> MatrixOperation.rank(input)
+        4
     """
-  def rank(matrix, iter_num \\ 100) do
+  def rank(matrix, iter_num \\ 1000) do
     matrix
     |> singular_value(iter_num)
-    |> count_finite_values()
-  end
-
-  defp count_finite_values(x) when is_list(x) do
-    x
-    |> Enum.map(&count_finite_values(&1))
-    |> Enum.sum()
-  end
-
-  defp count_finite_values(x) when is_number(x) and x == 0 do
-    0
-  end
-
-  defp count_finite_values(x) when is_number(x) do
-    1
+    |> Tuple.to_list()
+    |> length()
   end
 
   @doc """
@@ -1721,6 +1715,7 @@ defmodule MatrixOperation do
   def two_norm(a) do
     a
     |> singular_value(100)
+    |> Tuple.to_list()
     |> Enum.max()
   end
 
