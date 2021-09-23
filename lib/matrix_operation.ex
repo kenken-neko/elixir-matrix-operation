@@ -58,49 +58,49 @@ defmodule MatrixOperation do
   @doc """
     A m×n matrix having even-elements is got.
     #### Argument
-      - m: Number of rows in the unit matrix to output.
-      - n: Number of columns in the unit matrix to output.
-      - s: Value of the common element of the matrix to output.
+      - elem: Value of the common element of the matrix to output.
+      - {row_num, col_num}: Size of the matrix to output.
     #### Output
-      A m×n matrix
+      A row_num×col_num matrix having even elements
     #### Example
-        iex> MatrixOperation.even_matrix(2, 3, 0)
+        iex> MatrixOperation.even_matrix(0, {2, 3})
         [[0, 0, 0], [0, 0, 0]]
-        iex> MatrixOperation.even_matrix(3, 2, 1)
+        iex> MatrixOperation.even_matrix(1, {3, 2})
         [[1, 1], [1, 1], [1, 1]]
     """
-  def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
-    Enum.to_list(1..m)
-    |> Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
+  def even_matrix(elem, {row_num, col_num})
+    when row_num > 0 and col_num > 0 and is_number(elem) do
+    List.duplicate(elem, col_num)
+    |> List.duplicate(row_num)
   end
 
-  def even_matrix(_m, _n, _s) do
+  def even_matrix(_elem, _size) do
     nil
   end
 
   @doc """
     A m×n matrix having random elements is got.
     #### Argument
-      - m: Number of rows in the unit matrix to output.
-      - n: Number of columns in the unit matrix to output.
       - min_val: Minimum value of random number.
       - max_val: Maximum value of random number.
+      - {row_num, col_num}: Size of the matrix to output.
       - type: Data type of elements. "int" or "real".
     #### Output
-      A m×n matrix
+      A row_num×col_num matrix having random elements
     """
-  def random_matrix(m, n, min_val, max_val, type) when m > 0 and n > 0 and max_val > min_val do
-    Enum.to_list(1..m)
+  def random_matrix(min_val, max_val, {row_num, col_num}, type \\ "int")
+    when row_num > 0 and col_num > 0 and max_val > min_val do
+    Enum.to_list(1..row_num)
     |> Enum.map(
         fn _ ->
           Enum.map(
-            Enum.to_list(1..n), & &1 * 0 + random_element(min_val, max_val, type)
+            Enum.to_list(1..col_num), & &1 * 0 + random_element(min_val, max_val, type)
           )
         end
       )
   end
 
-  def random_matrix(_m, _n, _min_val, _max_val, _type) do
+  def random_matrix(_min_val, _max_val, _size, _type) do
     nil
   end
 
@@ -109,7 +109,7 @@ defmodule MatrixOperation do
   end
 
   defp random_element(min_val, max_val, "real") do
-    const = 10000
+    const = 10000000
     min_val_real = min_val * const
     max_val_real = max_val * const
     Enum.random(min_val_real..max_val_real) / const
@@ -119,14 +119,14 @@ defmodule MatrixOperation do
     An element of a matrix is got.
     #### Argument
       - matrix: Target matrix from which to extract the element.
-      - [row_idx, col_idx]: Index of row and column of the element to be extracted.
+      - {row_idx, col_idx}: Index of row and column of the element to be extracted.
     #### Output
       An element of a matrix
     #### Example
-        iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
+        iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], {1, 1})
         1
     """
-  def get_one_element(matrix, [row_idx, col_idx]) do
+  def get_one_element(matrix, {row_idx, col_idx}) do
     matrix
     |> Enum.at(row_idx - 1)
     |> Enum.at(col_idx - 1)
@@ -433,7 +433,7 @@ defmodule MatrixOperation do
   end
 
   defp lu_decomposition_sub(matrix, k, matrix_len, _l_matrix, _u_matrix) when k == 0 do
-    u_matrix = even_matrix(matrix_len, matrix_len, 0)
+    u_matrix = even_matrix(0, {matrix_len, matrix_len})
                |> exchange_one_row(1, hd(matrix))
     inverce_u11 = 1.0 / hd(hd(u_matrix))
     factor = matrix
@@ -441,7 +441,7 @@ defmodule MatrixOperation do
     |> get_one_row(1)
     |> Enum.slice(1, matrix_len)
     l_row = [1] ++ hd(const_multiple(inverce_u11, [factor]))
-    l_matrix = even_matrix(matrix_len, matrix_len, 0)
+    l_matrix = even_matrix(0, {matrix_len, matrix_len})
                |> exchange_one_row(1, l_row)
     lu_decomposition_sub(matrix, k + 1, matrix_len, l_matrix, u_matrix)
   end
@@ -1290,9 +1290,9 @@ defmodule MatrixOperation do
     |> jocobi_sub(max_odt, 0)
     |> jocobi_sub2(col_num, 0)
 
-    a_ij = get_one_element(matrix, [max_i + 1, max_j + 1])
-    a_ii = get_one_element(matrix, [max_i + 1, max_i + 1])
-    a_jj = get_one_element(matrix, [max_j + 1, max_j + 1])
+    a_ij = get_one_element(matrix, {max_i + 1, max_j + 1})
+    a_ii = get_one_element(matrix, {max_i + 1, max_i + 1})
+    a_jj = get_one_element(matrix, {max_j + 1, max_j + 1})
     phi = phi_if(a_ii - a_jj, a_ij)
 
     p = jacobi_sub3(phi, col_num, max_i, max_j, 0, 0, [], [])
@@ -1321,7 +1321,7 @@ defmodule MatrixOperation do
   end
 
   defp off_diagonal_terms(m, row_num, col_num, i, j, output) when i < j and row_num >= i and col_num > j do
-    off_diagonal_terms(m, row_num, col_num, i, j + 1, output ++ [get_one_element(m, [i + 1, j + 1])])
+    off_diagonal_terms(m, row_num, col_num, i, j + 1, output ++ [get_one_element(m, {i + 1, j + 1})])
   end
 
   defp off_diagonal_terms(m, row_num, col_num, i, j, output) when i < j and row_num > i and col_num == j do
