@@ -25,7 +25,7 @@ You can install this package by adding this code to dependencies in your mix.exs
 ```elixir
 def deps do
   [
-    {:matrix_operation, "~> 0.4.4"}
+    {:matrix_operation, "~> 0.4.5"}
   ]
 end
 ```
