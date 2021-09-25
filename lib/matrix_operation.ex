@@ -1470,7 +1470,7 @@ defmodule MatrixOperation do
       - iter_num: iteration number of the QR decomposition.  The default value is 1000.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
-      Eigenvalue is a non-trivial value other than zero.
+      Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
     #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
