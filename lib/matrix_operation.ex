@@ -1518,9 +1518,10 @@ defmodule MatrixOperation do
   end
 
   defp qr_for_ev(a, q, matrix_len, u, num) when matrix_len != num do
-    h = get_one_column(a, num)
+    h = hessenberg(a, u, matrix_len, num)
+    |> get_one_column(num)
     |> replace_zero(num-1)
-    |> householder_for_qr(num-1, u)
+    |> householder(num-1, u)
 
     a_n = product(h, a)
     q_n = product(q, h)
@@ -1532,13 +1533,25 @@ defmodule MatrixOperation do
     q_n
   end
 
+  defp hessenberg(a, u, matrix_len, num) when matrix_len != num do
+    hess = get_one_column(a, num)
+    |> replace_zero(num)
+    |> householder(num-1, u)
+    |> product(a)
+    hessenberg(hess, u, matrix_len, num+1)
+  end
+
+  defp hessenberg(_, hess, _, _) do
+    hess
+  end
+
   defp replace_zero(list, thresh_num) do
     list
     |> Enum.with_index()
     |> Enum.map(fn {x, i} -> if(i < thresh_num, do: 0, else: x) end)
   end
 
-  defp householder_for_qr(col, index, u) do
+  defp householder(col, index, u) do
     col_norm = col
     |> Enum.map(& &1*&1)
     |> Enum.sum()
