@@ -1496,29 +1496,31 @@ defmodule MatrixOperation do
   end
 
   defp eigenvalue(a, iter_num) do
-    eigenvalue_sub(a, 0, iter_num)
+    matrix_len = length(a)
+    u = unit_matrix(matrix_len)
+    a
+    |> hessenberg(matrix_len, u, 1)
+    |> eigenvalue_sub(matrix_len, u, 0, iter_num)
     |> exclude_zero_eigenvalue()
   end
 
-  defp eigenvalue_sub(a, count, iter_num) when count != iter_num do
-    matrix_len = length(a)
-    u = unit_matrix(matrix_len)
+  defp eigenvalue_sub(a, matrix_len, u, count, iter_num) when count != iter_num do
     q_n = qr_for_ev(a, u, matrix_len, u, 1)
     a_k = q_n
     |> transpose()
     |> product(a)
     |> product(q_n)
-    eigenvalue_sub(a_k, count+1, iter_num)
+    eigenvalue_sub(a_k, matrix_len, u, count+1, iter_num)
   end
 
-  defp eigenvalue_sub(a_k, _, _) do
+  defp eigenvalue_sub(a_k, _, _,  _, _) do
     a_k
     |> Enum.with_index()
     |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
   end
 
   defp qr_for_ev(a, q, matrix_len, u, num) when matrix_len != num do
-    h = hessenberg(a, u, matrix_len, num)
+    h = a
     |> get_one_column(num)
     |> replace_zero(num-1)
     |> householder(num-1, u)
@@ -1533,15 +1535,16 @@ defmodule MatrixOperation do
     q_n
   end
 
-  defp hessenberg(a, u, matrix_len, num) when matrix_len != num do
-    hess = get_one_column(a, num)
+  defp hessenberg(a, matrix_len, u, num) when matrix_len != num+1 do
+    hess = a
+    |> get_one_column(num)
     |> replace_zero(num)
     |> householder(num-1, u)
     |> product(a)
-    hessenberg(hess, u, matrix_len, num+1)
+    hessenberg(hess, matrix_len, u, num+1)
   end
 
-  defp hessenberg(_, hess, _, _) do
+  defp hessenberg(hess, _, _, _) do
     hess
   end
 
