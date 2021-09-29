@@ -1578,25 +1578,6 @@ defmodule MatrixOperation do
     subtract(u, m)
   end
 
-  defp householder_2(col, index, u) do
-    col_norm = col
-    |> Enum.map(& &1*&1)
-    |> Enum.sum()
-    |> :math.sqrt()
-
-    top = Enum.at(col, index)
-    top_cn = if(top <= 0, do: top + col_norm, else: top - col_norm)
-    v = List.replace_at(col, index, top_cn)
-
-    cn_top = if(top >= 0, do: col_norm + top, else: col_norm - top)
-    vtv = [v]
-    |> transpose
-    |> product([v])
-    m = const_multiple(1/(col_norm * cn_top), vtv)
-
-    subtract(u, m)
-  end
-
   defp eigenvalue_shift(a, ev) do
     unit = a
     |> length
