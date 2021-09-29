@@ -1573,8 +1573,14 @@ defmodule MatrixOperation do
     vtv = [v]
     |> transpose
     |> product([v])
-    m = const_multiple(1/(col_norm * cn_top), vtv)
 
+    # avoid division by zero
+    norm = if(
+      col_norm * cn_top == 0,
+      do: 0.0001,
+      else: col_norm * cn_top
+    )
+    m = const_multiple(1/norm, vtv)
     subtract(u, m)
   end
 
