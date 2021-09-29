@@ -1212,7 +1212,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.power_iteration([[3, 1], [2, 2]])
         {
           4.0,
-          [0.7071067811865476, 0.7071067811865476]
+          [0.7071067811865476, 0.7071067811865475]
         }
         iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]])
         {
@@ -1417,7 +1417,7 @@ defmodule MatrixOperation do
           [1.7320508075688772, 1.4142135623730951],
           [
             [0.5773502691896257, 0.5773502691896257, 0.5773502691896258],
-            [0.7071067811865476, -0.7071067811865476, 0.0]
+            [-0.7071067811865476, 0.7071067811865476, 0.0]
           ],
           [[1.0, 0.0], [0.0, 1.0]]
         }
@@ -1474,11 +1474,11 @@ defmodule MatrixOperation do
     #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
-          [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
+          [12.175971065046914, -3.6686830979532736, -2.507287967093643],
           [
-            [0.49659978454619125, 0.5773502691896257, 0.6481167492476514],
-            [-0.3129856771935595, -0.5773502691896257, 0.7541264035547063],
-            [0.8095854617397507, -0.5773502691896256, -0.10600965430705483]
+            [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
+            [0.3129856771935595, 0.5773502691896258, -0.7541264035547063],
+            [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
           ]
         }
     """
@@ -1496,31 +1496,34 @@ defmodule MatrixOperation do
   end
 
   defp eigenvalue(a, iter_num) do
-    eigenvalue_sub(a, 0, iter_num)
+    matrix_len = length(a)
+    u = unit_matrix(matrix_len)
+    a
+    |> hessenberg(matrix_len, u, 1)
+    |> eigenvalue_sub(matrix_len, u, 0, iter_num)
     |> exclude_zero_eigenvalue()
   end
 
-  defp eigenvalue_sub(a, count, iter_num) when count != iter_num do
-    matrix_len = length(a)
-    u = unit_matrix(matrix_len)
+  defp eigenvalue_sub(a, matrix_len, u, count, iter_num) when count != iter_num do
     q_n = qr_for_ev(a, u, matrix_len, u, 1)
     a_k = q_n
     |> transpose()
     |> product(a)
     |> product(q_n)
-    eigenvalue_sub(a_k, count+1, iter_num)
+    eigenvalue_sub(a_k, matrix_len, u, count+1, iter_num)
   end
 
-  defp eigenvalue_sub(a_k, _, _) do
+  defp eigenvalue_sub(a_k, _, _,  _, _) do
     a_k
     |> Enum.with_index()
     |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
   end
 
   defp qr_for_ev(a, q, matrix_len, u, num) when matrix_len != num do
-    h = get_one_column(a, num)
+    h = a
+    |> get_one_column(num)
     |> replace_zero(num-1)
-    |> householder_for_qr(num-1, u)
+    |> householder(num-1, u)
 
     a_n = product(h, a)
     q_n = product(q, h)
@@ -1532,13 +1535,31 @@ defmodule MatrixOperation do
     q_n
   end
 
+  defp hessenberg(a, matrix_len, u, num) when matrix_len != num + 1 do
+    q = a
+    |> get_one_column(num)
+    |> replace_zero(num)
+    |> householder(num, u)
+
+    qt = transpose(q)
+    hess = q
+    |> product(a)
+    |> product(qt)
+
+    hessenberg(hess, matrix_len, u, num+1)
+  end
+
+  defp hessenberg(hess, _, _, _) do
+    hess
+  end
+
   defp replace_zero(list, thresh_num) do
     list
     |> Enum.with_index()
     |> Enum.map(fn {x, i} -> if(i < thresh_num, do: 0, else: x) end)
   end
 
-  defp householder_for_qr(col, index, u) do
+  defp householder(col, index, u) do
     col_norm = col
     |> Enum.map(& &1*&1)
     |> Enum.sum()
@@ -1552,8 +1573,14 @@ defmodule MatrixOperation do
     vtv = [v]
     |> transpose
     |> product([v])
-    m = const_multiple(1/(col_norm * cn_top), vtv)
 
+    # avoid division by zero
+    norm = if(
+      col_norm * cn_top == 0,
+      do: 0.0001,
+      else: col_norm * cn_top
+    )
+    m = const_multiple(1/norm, vtv)
     subtract(u, m)
   end
 
@@ -1580,18 +1607,18 @@ defmodule MatrixOperation do
         iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
         [[5.000000000000018, 0], [0, -1.999999999999997]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]])
-        [[4.101784906061108, 0, 0], [0, -2.6170355220017694, 0], [0, 0, 2.515250615940715]]
+        [[4.101784906061095, 0, 0], [0, -2.61703552200174, 0], [0, 0, 2.5152506159407]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
         nil
         iex> MatrixOperation.diagonalization([[16, -1, 1, 2, 3], [2, 12, 1, 5, 6], [1, 3, -24, 8, 9], [3, 4, 9, 1, 23], [5, 3, 1, 2, 1]], 100)
         [
-          [-26.608939297937113, 0, 0, 0, 0],
-          [0, 20.4243649343814, 0, 0, 0],
-          [0, 0, 14.665793374162595, 0, 0],
-          [0, 0, 0, -3.547766546408004, 0],
-          [0, 0, 0, 0, 1.0665475358009557]
+          [-26.60893929793715, 0, 0, 0, 0],
+          [0, 20.4243649343813, 0, 0, 0],
+          [0, 0, 14.665793374162673, 0, 0],
+          [0, 0, 0, -3.5477665464080044, 0],
+          [0, 0, 0, 0, 1.0665475358009446]
         ]
     """
   def diagonalization(a, iter_num \\ 1000) do
@@ -1632,7 +1659,7 @@ defmodule MatrixOperation do
       Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]])
-        {14.912172620559879, 4.236463407782015, 1.6369134152873956}
+        {14.9121726205599, 4.23646340778201, 1.6369134152873912}
     """
   def singular_value(a, iter_num \\ 1000) do
     a
@@ -1710,7 +1737,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
         5.674983803488139
         iex> MatrixOperation.two_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-        7.329546646114924
+        7.329546646114923
     """
   def two_norm(a) do
     a
