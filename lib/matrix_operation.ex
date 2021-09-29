@@ -1535,12 +1535,17 @@ defmodule MatrixOperation do
     q_n
   end
 
-  defp hessenberg(a, matrix_len, u, num) when matrix_len != num+1 do
-    hess = a
+  defp hessenberg(a, matrix_len, u, num) when matrix_len != num + 1 do
+    q = a
     |> get_one_column(num)
     |> replace_zero(num)
-    |> householder(num-1, u)
+    |> householder(num, u)
+
+    qt = transpose(q)
+    hess = q
     |> product(a)
+    |> product(qt)
+
     hessenberg(hess, matrix_len, u, num+1)
   end
 
@@ -1562,6 +1567,25 @@ defmodule MatrixOperation do
 
     top = Enum.at(col, index)
     top_cn = if(top >= 0, do: top + col_norm, else: top - col_norm)
+    v = List.replace_at(col, index, top_cn)
+
+    cn_top = if(top >= 0, do: col_norm + top, else: col_norm - top)
+    vtv = [v]
+    |> transpose
+    |> product([v])
+    m = const_multiple(1/(col_norm * cn_top), vtv)
+
+    subtract(u, m)
+  end
+
+  defp householder_2(col, index, u) do
+    col_norm = col
+    |> Enum.map(& &1*&1)
+    |> Enum.sum()
+    |> :math.sqrt()
+
+    top = Enum.at(col, index)
+    top_cn = if(top <= 0, do: top + col_norm, else: top - col_norm)
     v = List.replace_at(col, index, top_cn)
 
     cn_top = if(top >= 0, do: col_norm + top, else: col_norm - top)
