@@ -58,49 +58,49 @@ defmodule MatrixOperation do
   @doc """
     A m×n matrix having even-elements is got.
     #### Argument
-      - m: Number of rows in the unit matrix to output.
-      - n: Number of columns in the unit matrix to output.
-      - s: Value of the common element of the matrix to output.
+      - elem: Value of the common element of the matrix to output.
+      - {row_num, col_num}: Size of the matrix to output.
     #### Output
-      A m×n matrix
+      A row_num×col_num matrix having even elements
     #### Example
-        iex> MatrixOperation.even_matrix(2, 3, 0)
+        iex> MatrixOperation.even_matrix(0, {2, 3})
         [[0, 0, 0], [0, 0, 0]]
-        iex> MatrixOperation.even_matrix(3, 2, 1)
+        iex> MatrixOperation.even_matrix(1, {3, 2})
         [[1, 1], [1, 1], [1, 1]]
     """
-  def even_matrix(m, n, s) when m > 0 and n > 0 and is_number(s) do
-    Enum.to_list(1..m)
-    |> Enum.map(fn _ -> Enum.map(Enum.to_list(1..n), & &1 * 0 + s) end)
+  def even_matrix(elem, {row_num, col_num})
+    when row_num > 0 and col_num > 0 and is_number(elem) do
+    List.duplicate(elem, col_num)
+    |> List.duplicate(row_num)
   end
 
-  def even_matrix(_m, _n, _s) do
+  def even_matrix(_elem, _size) do
     nil
   end
 
   @doc """
     A m×n matrix having random elements is got.
     #### Argument
-      - m: Number of rows in the unit matrix to output.
-      - n: Number of columns in the unit matrix to output.
       - min_val: Minimum value of random number.
       - max_val: Maximum value of random number.
+      - {row_num, col_num}: Size of the matrix to output.
       - type: Data type of elements. "int" or "real".
     #### Output
-      A m×n matrix
+      A row_num×col_num matrix having random elements
     """
-  def random_matrix(m, n, min_val, max_val, type) when m > 0 and n > 0 and max_val > min_val do
-    Enum.to_list(1..m)
+  def random_matrix(min_val, max_val, {row_num, col_num}, type \\ "int")
+    when row_num > 0 and col_num > 0 and max_val > min_val do
+    Enum.to_list(1..row_num)
     |> Enum.map(
         fn _ ->
           Enum.map(
-            Enum.to_list(1..n), & &1 * 0 + random_element(min_val, max_val, type)
+            Enum.to_list(1..col_num), & &1 * 0 + random_element(min_val, max_val, type)
           )
         end
       )
   end
 
-  def random_matrix(_m, _n, _min_val, _max_val, _type) do
+  def random_matrix(_min_val, _max_val, _size, _type) do
     nil
   end
 
@@ -109,7 +109,7 @@ defmodule MatrixOperation do
   end
 
   defp random_element(min_val, max_val, "real") do
-    const = 10000
+    const = 10000000
     min_val_real = min_val * const
     max_val_real = max_val * const
     Enum.random(min_val_real..max_val_real) / const
@@ -119,14 +119,14 @@ defmodule MatrixOperation do
     An element of a matrix is got.
     #### Argument
       - matrix: Target matrix from which to extract the element.
-      - [row_idx, col_idx]: Index of row and column of the element to be extracted.
+      - {row_idx, col_idx}: Index of row and column of the element to be extracted.
     #### Output
       An element of a matrix
     #### Example
-        iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], [1, 1])
+        iex> MatrixOperation.get_one_element([[1, 2, 3], [4, 5, 6], [7, 8, 9] ], {1, 1})
         1
     """
-  def get_one_element(matrix, [row_idx, col_idx]) do
+  def get_one_element(matrix, {row_idx, col_idx}) do
     matrix
     |> Enum.at(row_idx - 1)
     |> Enum.at(col_idx - 1)
@@ -433,7 +433,7 @@ defmodule MatrixOperation do
   end
 
   defp lu_decomposition_sub(matrix, k, matrix_len, _l_matrix, _u_matrix) when k == 0 do
-    u_matrix = even_matrix(matrix_len, matrix_len, 0)
+    u_matrix = even_matrix(0, {matrix_len, matrix_len})
                |> exchange_one_row(1, hd(matrix))
     inverce_u11 = 1.0 / hd(hd(u_matrix))
     factor = matrix
@@ -441,7 +441,7 @@ defmodule MatrixOperation do
     |> get_one_row(1)
     |> Enum.slice(1, matrix_len)
     l_row = [1] ++ hd(const_multiple(inverce_u11, [factor]))
-    l_matrix = even_matrix(matrix_len, matrix_len, 0)
+    l_matrix = even_matrix(0, {matrix_len, matrix_len})
                |> exchange_one_row(1, l_row)
     lu_decomposition_sub(matrix, k + 1, matrix_len, l_matrix, u_matrix)
   end
@@ -1212,7 +1212,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.power_iteration([[3, 1], [2, 2]])
         {
           4.0,
-          [0.7071067811865476, 0.7071067811865476]
+          [0.7071067811865476, 0.7071067811865475]
         }
         iex> MatrixOperation.power_iteration([[1, 1, 2], [0, 2, -1], [0, 0, 3]])
         {
@@ -1290,9 +1290,9 @@ defmodule MatrixOperation do
     |> jocobi_sub(max_odt, 0)
     |> jocobi_sub2(col_num, 0)
 
-    a_ij = get_one_element(matrix, [max_i + 1, max_j + 1])
-    a_ii = get_one_element(matrix, [max_i + 1, max_i + 1])
-    a_jj = get_one_element(matrix, [max_j + 1, max_j + 1])
+    a_ij = get_one_element(matrix, {max_i + 1, max_j + 1})
+    a_ii = get_one_element(matrix, {max_i + 1, max_i + 1})
+    a_jj = get_one_element(matrix, {max_j + 1, max_j + 1})
     phi = phi_if(a_ii - a_jj, a_ij)
 
     p = jacobi_sub3(phi, col_num, max_i, max_j, 0, 0, [], [])
@@ -1321,7 +1321,7 @@ defmodule MatrixOperation do
   end
 
   defp off_diagonal_terms(m, row_num, col_num, i, j, output) when i < j and row_num >= i and col_num > j do
-    off_diagonal_terms(m, row_num, col_num, i, j + 1, output ++ [get_one_element(m, [i + 1, j + 1])])
+    off_diagonal_terms(m, row_num, col_num, i, j + 1, output ++ [get_one_element(m, {i + 1, j + 1})])
   end
 
   defp off_diagonal_terms(m, row_num, col_num, i, j, output) when i < j and row_num > i and col_num == j do
@@ -1417,7 +1417,7 @@ defmodule MatrixOperation do
           [1.7320508075688772, 1.4142135623730951],
           [
             [0.5773502691896257, 0.5773502691896257, 0.5773502691896258],
-            [0.7071067811865476, -0.7071067811865476, 0.0]
+            [-0.7071067811865476, 0.7071067811865476, 0.0]
           ],
           [[1.0, 0.0], [0.0, 1.0]]
         }
@@ -1514,15 +1514,15 @@ defmodule MatrixOperation do
       - iter_num: iteration number of the QR decomposition.  The default value is 1000.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
-      Eigenvalue is a non-trivial value other than zero.
+      Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
     #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
-          [12.17597106504691, -3.6686830979532696, -2.5072879670936357],
+          [12.175971065046914, -3.6686830979532736, -2.507287967093643],
           [
-            [0.49659978454619125, 0.5773502691896257, 0.6481167492476514],
-            [-0.3129856771935595, -0.5773502691896257, 0.7541264035547063],
-            [0.8095854617397507, -0.5773502691896256, -0.10600965430705483]
+            [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
+            [0.3129856771935595, 0.5773502691896258, -0.7541264035547063],
+            [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
           ]
         }
     """
@@ -1540,31 +1540,34 @@ defmodule MatrixOperation do
   end
 
   defp eigenvalue(a, iter_num) do
-    eigenvalue_sub(a, 0, iter_num)
+    matrix_len = length(a)
+    u = unit_matrix(matrix_len)
+    a
+    |> hessenberg(matrix_len, u, 1)
+    |> eigenvalue_sub(matrix_len, u, 0, iter_num)
     |> exclude_zero_eigenvalue()
   end
 
-  defp eigenvalue_sub(a, count, iter_num) when count != iter_num do
-    matrix_len = length(a)
-    u = unit_matrix(matrix_len)
+  defp eigenvalue_sub(a, matrix_len, u, count, iter_num) when count != iter_num do
     q_n = qr_for_ev(a, u, matrix_len, u, 1)
     a_k = q_n
     |> transpose()
     |> product(a)
     |> product(q_n)
-    eigenvalue_sub(a_k, count+1, iter_num)
+    eigenvalue_sub(a_k, matrix_len, u, count+1, iter_num)
   end
 
-  defp eigenvalue_sub(a_k, _, _) do
+  defp eigenvalue_sub(a_k, _, _,  _, _) do
     a_k
     |> Enum.with_index()
     |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
   end
 
   defp qr_for_ev(a, q, matrix_len, u, num) when matrix_len != num do
-    h = get_one_column(a, num)
+    h = a
+    |> get_one_column(num)
     |> replace_zero(num-1)
-    |> householder_for_qr(num-1, u)
+    |> householder(num-1, u)
 
     a_n = product(h, a)
     q_n = product(q, h)
@@ -1576,13 +1579,31 @@ defmodule MatrixOperation do
     q_n
   end
 
+  defp hessenberg(a, matrix_len, u, num) when matrix_len != num + 1 do
+    q = a
+    |> get_one_column(num)
+    |> replace_zero(num)
+    |> householder(num, u)
+
+    qt = transpose(q)
+    hess = q
+    |> product(a)
+    |> product(qt)
+
+    hessenberg(hess, matrix_len, u, num+1)
+  end
+
+  defp hessenberg(hess, _, _, _) do
+    hess
+  end
+
   defp replace_zero(list, thresh_num) do
     list
     |> Enum.with_index()
     |> Enum.map(fn {x, i} -> if(i < thresh_num, do: 0, else: x) end)
   end
 
-  defp householder_for_qr(col, index, u) do
+  defp householder(col, index, u) do
     col_norm = col
     |> Enum.map(& &1*&1)
     |> Enum.sum()
@@ -1596,8 +1617,14 @@ defmodule MatrixOperation do
     vtv = [v]
     |> transpose
     |> product([v])
-    m = const_multiple(1/(col_norm * cn_top), vtv)
 
+    # avoid division by zero
+    norm = if(
+      col_norm * cn_top == 0,
+      do: 0.0001,
+      else: col_norm * cn_top
+    )
+    m = const_multiple(1/norm, vtv)
     subtract(u, m)
   end
 
@@ -1624,18 +1651,18 @@ defmodule MatrixOperation do
         iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
         [[5.000000000000018, 0], [0, -1.999999999999997]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]])
-        [[4.101784906061108, 0, 0], [0, -2.6170355220017694, 0], [0, 0, 2.515250615940715]]
+        [[4.101784906061095, 0, 0], [0, -2.61703552200174, 0], [0, 0, 2.5152506159407]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
         nil
         iex> MatrixOperation.diagonalization([[16, -1, 1, 2, 3], [2, 12, 1, 5, 6], [1, 3, -24, 8, 9], [3, 4, 9, 1, 23], [5, 3, 1, 2, 1]], 100)
         [
-          [-26.608939297937113, 0, 0, 0, 0],
-          [0, 20.4243649343814, 0, 0, 0],
-          [0, 0, 14.665793374162595, 0, 0],
-          [0, 0, 0, -3.547766546408004, 0],
-          [0, 0, 0, 0, 1.0665475358009557]
+          [-26.60893929793715, 0, 0, 0, 0],
+          [0, 20.4243649343813, 0, 0, 0],
+          [0, 0, 14.665793374162673, 0, 0],
+          [0, 0, 0, -3.5477665464080044, 0],
+          [0, 0, 0, 0, 1.0665475358009446]
         ]
     """
   def diagonalization(a, iter_num \\ 1000) do
@@ -1676,7 +1703,7 @@ defmodule MatrixOperation do
       Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]])
-        {14.912172620559879, 4.236463407782015, 1.6369134152873956}
+        {14.9121726205599, 4.23646340778201, 1.6369134152873912}
     """
   def singular_value(a, iter_num \\ 1000) do
     a
@@ -1754,7 +1781,7 @@ defmodule MatrixOperation do
         iex> MatrixOperation.two_norm([[2, 3], [1, 4], [2, 1]])
         5.674983803488139
         iex> MatrixOperation.two_norm([[1, 3, 3], [2, 4, 1], [2, 3, 2]])
-        7.329546646114924
+        7.329546646114923
     """
   def two_norm(a) do
     a
