@@ -1205,7 +1205,7 @@ defmodule MatrixOperation do
     Power iteration method (maximum eigen value and eigen vector)
     #### Argument
       - matrix: Matrix to adapt the power iteration method.
-      - iter_num: iteration number of the power iteration method. The default value is 1000.
+      - iter_max: iteration number of the power iteration method. The default value is 1000.
     #### Output
       Maximum eigenvalue and normalized eigenvector corresponding to the maximum eigenvalue
     #### Example
@@ -1220,9 +1220,9 @@ defmodule MatrixOperation do
           [0.3333333333333333, -0.6666666666666666, 0.6666666666666666]
         }
     """
-  def power_iteration(matrix, iter_num \\ 1000) do
+  def power_iteration(matrix, iter_max \\ 1000) do
     init_vec = random_column(length(matrix))
-    xk_pre = power_iteration_sub(matrix, init_vec, iter_num)
+    xk_pre = power_iteration_sub(matrix, init_vec, iter_max)
     # eigen vector
     [xk_vec] = product(matrix, xk_pre) |> transpose
     [xk_pre_vec] = transpose(xk_pre)
@@ -1242,9 +1242,9 @@ defmodule MatrixOperation do
     nil
   end
 
-  defp power_iteration_sub(matrix, v, iter_num) do
+  defp power_iteration_sub(matrix, v, iter_max) do
     # Normarization is for overflow suppression
-    Enum.reduce(1..iter_num, v, fn _, acc ->
+    Enum.reduce(1..iter_max, v, fn _, acc ->
       vp = product(matrix, acc)
       [vpt] = transpose(vp)
       const_multiple(1 / :math.sqrt(inner_product(vpt, vpt)), vp)
@@ -1255,7 +1255,7 @@ defmodule MatrixOperation do
     Calculate eigenvalues and eigenvectors by using Jacobi method
     #### Argument
       - matrix: Matrix to adapt the power iteration method.
-      - iter_num: iteration number of the power iteration method. The default value is 1000.
+      - iter_max: iteration number of the power iteration method. The default value is 1000.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors
     #### Example
@@ -1269,8 +1269,8 @@ defmodule MatrixOperation do
           ]
         }
     """
-  def jacobi(matrix, iter_num \\ 1000) do
-    [pap, p] = jacobi_iteration(matrix, iter_num, 0, unit_matrix(length(matrix)))
+  def jacobi(matrix, iter_max \\ 1000) do
+    [pap, p] = jacobi_iteration(matrix, iter_max, 0, unit_matrix(length(matrix)))
     p_rnd = Enum.map(p, & Enum.map(&1, fn x -> zero_approximation(x) end))
 
     pap
@@ -1280,7 +1280,7 @@ defmodule MatrixOperation do
     |> exclude_zero_eigenvalue(p_rnd)
   end
 
-  defp jacobi_iteration(matrix, iter_num, l, p_pre) when l != iter_num do
+  defp jacobi_iteration(matrix, iter_max, l, p_pre) when l != iter_max do
     {row_num, col_num} = size(matrix)
     odts = off_diagonal_terms(matrix, row_num, col_num, 0, 0, [])
     |> Enum.map(& abs(&1))
@@ -1301,7 +1301,7 @@ defmodule MatrixOperation do
     |> transpose()
     |> product(matrix)
     |> product(p)
-    |> jacobi_iteration(iter_num, l + 1, p_pi)
+    |> jacobi_iteration(iter_max, l + 1, p_pi)
   end
 
   defp jacobi_iteration(matrix, _, _, p) do
@@ -1394,7 +1394,6 @@ defmodule MatrixOperation do
     Singular Value Decomposition (SVD) using Jacobi method.
     #### Argument
       - matrix: Matrix to adapt the SVD by using the QR decomposition method.
-      - iter_num: iteration number of the QR decomposition method. The default value is 1000.
     #### Output
       [Singular values, U-matrix, V-matrix]:
         Singular values, U-matrix and V-matrix.
@@ -1432,31 +1431,31 @@ defmodule MatrixOperation do
           ]
         }
     """
-  def svd(a, iter_num \\ 1000) do
+  def svd(a) do
     a_t = transpose(a)
-    svd_sub(a, a_t, iter_num)
+    svd_sub(a, a_t)
   end
 
-  def svd_sub(a, a_t, iter_num) when length(a) <= length(a_t) do
+  def svd_sub(a, a_t) when length(a) <= length(a_t) do
     # U matrix
     aat = product(a, a_t)
-    {sv_sq, u} = eigen(aat, iter_num)
+    {sv_sq, u} = eigen(aat)
     # V matirx
     ata = product(a_t, a)
-    {_, v} = eigen(ata, iter_num)
+    {_, v} = eigen(ata)
     # Singular value
     s = Enum.map(sv_sq, & :math.sqrt(&1))
     # A = USV^t
     {s, u, v}
   end
 
-  def svd_sub(a, a_t, iter_num) do
+  def svd_sub(a, a_t) do
     # U matrix
     aat = product(a, a_t)
-    {_, u} = eigen(aat, iter_num)
+    {_, u} = eigen(aat)
     # V matirx
     ata = product(a_t, a)
-    {sv_sq, v} = eigen(ata, iter_num)
+    {sv_sq, v} = eigen(ata)
     # Singular value
     s = Enum.map(sv_sq, & :math.sqrt(&1))
     # A = USV^t
@@ -1467,7 +1466,6 @@ defmodule MatrixOperation do
     Calculate eigenvalues and eigenvectors by using QR decomposition.
     #### Argument
       - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
-      - iter_num: iteration number of the QR decomposition.  The default value is 1000.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
       Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
@@ -1482,35 +1480,38 @@ defmodule MatrixOperation do
           ]
         }
     """
-  def eigen(a, iter_num \\ 1000) do
+  def eigen(a) do
     delta = 0.0001 # avoid division by zero
-    evals = eigenvalue(a, iter_num)
+    evals = eigenvalue(a)
     evecs = evals
     |> Enum.map(
       & eigenvalue_shift(a, -&1+delta)
       |> inverse_matrix()
-      |> power_iteration(iter_num)
+      |> power_iteration()
       |> extract_second()
     )
     {evals, evecs}
   end
 
-  defp eigenvalue(a, iter_num) do
+  defp eigenvalue(a) do
+    # Set the number of iterations according to the number of dimensions.
+    # Refer to the LAPACK (ex. dlahqr).
+    iter_max = 30 * Enum.max([10, length(a)])
     matrix_len = length(a)
     u = unit_matrix(matrix_len)
     a
     |> hessenberg(matrix_len, u, 1)
-    |> eigenvalue_sub(matrix_len, u, 0, iter_num)
+    |> eigenvalue_sub(matrix_len, u, 0, iter_max)
     |> exclude_zero_eigenvalue()
   end
 
-  defp eigenvalue_sub(a, matrix_len, u, count, iter_num) when count != iter_num do
+  defp eigenvalue_sub(a, matrix_len, u, count, iter_max) when count != iter_max do
     q_n = qr_for_ev(a, u, matrix_len, u, 1)
     a_k = q_n
     |> transpose()
     |> product(a)
     |> product(q_n)
-    eigenvalue_sub(a_k, matrix_len, u, count+1, iter_num)
+    eigenvalue_sub(a_k, matrix_len, u, count+1, iter_max)
   end
 
   defp eigenvalue_sub(a_k, _, _,  _, _) do
@@ -1600,7 +1601,6 @@ defmodule MatrixOperation do
     Matrix diagonalization using the QR decomposition.
     #### Argument
       - a: Matrix to be diagonalized by using the QR decomposition.
-      - iter_num: iteration number of the QR decomposition. The default value is 1000.
     #### Output
       Diagonalized matrix
     #### Example
@@ -1610,9 +1610,9 @@ defmodule MatrixOperation do
         [[4.101784906061095, 0, 0], [0, -2.61703552200174, 0], [0, 0, 2.5152506159407]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
-        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]], 100)
+        iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
         nil
-        iex> MatrixOperation.diagonalization([[16, -1, 1, 2, 3], [2, 12, 1, 5, 6], [1, 3, -24, 8, 9], [3, 4, 9, 1, 23], [5, 3, 1, 2, 1]], 100)
+        iex> MatrixOperation.diagonalization([[16, -1, 1, 2, 3], [2, 12, 1, 5, 6], [1, 3, -24, 8, 9], [3, 4, 9, 1, 23], [5, 3, 1, 2, 1]])
         [
           [-26.60893929793715, 0, 0, 0, 0],
           [0, 20.4243649343813, 0, 0, 0],
@@ -1621,8 +1621,8 @@ defmodule MatrixOperation do
           [0, 0, 0, 0, 1.0665475358009446]
         ]
     """
-  def diagonalization(a, iter_num \\ 1000) do
-    ev = eigenvalue(a, iter_num)
+  def diagonalization(a) do
+    ev = eigenvalue(a)
     if(length(ev)==length(a), do: ev, else: nil)
     |> diagonalization_condition()
   end
@@ -1654,18 +1654,17 @@ defmodule MatrixOperation do
     Calculate singular Value by using QR decomposition.
     #### Argument
       - a: Matrix to calculate singular values.
-      - iter_num: iteration number of the QR decomposition. The default value is 1000.
     #### Output
       Singular values list. Singular value is a non-trivial value other than zero.
     #### Example
         iex> MatrixOperation.singular_value([[1, 2, 3, 1], [2, 4, 1, 5], [3, 3, 10, 8]])
         {14.9121726205599, 4.23646340778201, 1.6369134152873912}
     """
-  def singular_value(a, iter_num \\ 1000) do
+  def singular_value(a) do
     a
     |> transpose()
     |> product(a)
-    |> eigenvalue(iter_num)
+    |> eigenvalue()
     |> Enum.map(& :math.sqrt(&1))
     |> List.to_tuple()
   end
@@ -1681,9 +1680,9 @@ defmodule MatrixOperation do
         iex> MatrixOperation.rank(input)
         4
     """
-  def rank(matrix, iter_num \\ 1000) do
+  def rank(matrix) do
     matrix
-    |> singular_value(iter_num)
+    |> singular_value()
     |> Tuple.to_list()
     |> length()
   end
@@ -1741,7 +1740,7 @@ defmodule MatrixOperation do
     """
   def two_norm(a) do
     a
-    |> singular_value(100)
+    |> singular_value()
     |> Tuple.to_list()
     |> Enum.max()
   end
