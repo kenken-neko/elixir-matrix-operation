@@ -1469,15 +1469,15 @@ defmodule MatrixOperation do
     #### Output
       Moore-Penrose general inverse matrix
     #### Example
-        iex> MatrixOperation.mp_inverse_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 10000)
+        iex> MatrixOperation.mp_inverse_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         [
           [0.6511218659811384, 0.19630926335148915, -0.2585033392781616],
           [0.07015255957605655, 0.03537103844170941, 5.895173073621335e-4],
           [-0.5108167468290238, -0.12556718646806994, 0.25968237389288523]
         ]
     """
-  def mp_inverse_matrix(matrix, iter_num) do
-    svd(matrix, iter_num)
+  def mp_inverse_matrix(matrix) do
+    svd(matrix)
     |> sv_matrix_inv()
   end
 
@@ -1485,7 +1485,7 @@ defmodule MatrixOperation do
     # Zero matrix with index
     sv_len = length(sv)
     zm_idx =
-      even_matrix(sv_len, sv_len, 0)
+      even_matrix(0, {sv_len, sv_len})
       |> Enum.with_index()
     # Inverse singular value matrix
     svm_inv =
