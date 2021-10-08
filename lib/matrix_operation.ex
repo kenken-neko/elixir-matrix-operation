@@ -1470,6 +1470,91 @@ defmodule MatrixOperation do
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
       Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
     #### Example
+        iex> MatrixOperation.eigen_h([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
+        {
+          [12.175971065046914, -3.6686830979532736, -2.507287967093643],
+          [
+            [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
+            [0.3129856771935595, 0.5773502691896258, -0.7541264035547063],
+            [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
+          ]
+        }
+    """
+  def eigen_h(a) do
+    # Set the number of iterations according to the number of dimensions.
+    # Refer to the LAPACK (ex. dlahqr).
+    iter_max = 30 * Enum.max([10, length(a)])
+    matrix_len = length(a)
+    u = unit_matrix(matrix_len)
+    # Hessenberg transform
+    {hess, q_h} = hessenberg_2(a, matrix_len, u, u, 1)
+    # Compute eigenvalues and eigenvectors
+    {eigen_vals, eigen_vecs} = hess
+    |> qr_iter(matrix_len, q_h, u, 0, iter_max)
+    {eigen_vals, eigen_vecs} = exclude_zero_eigenvalue(eigen_vals, eigen_vecs)
+    # Normalize
+    eigen_vecs_2 = eigen_vecs
+    |> Enum.map(& normalize_vec(&1))
+    {eigen_vals, eigen_vecs_2}
+  end
+
+  defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
+    q_n = qr_for_ev(a, u, matrix_len, u, 1)
+    # Compute matrix a_k
+    a_k = q_n
+    |> transpose()
+    |> product(a)
+    |> product(q_n)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
+  end
+
+  defp qr_iter(a_k, _, q_k, _, _, _) do
+    # Compute eigenvalues
+    eigen_vals = a_k
+    |> Enum.with_index()
+    |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
+    # Compute eigenvectors
+    eigen_vecs = transpose(q_k)
+    {eigen_vals, eigen_vecs}
+  end
+
+  defp hessenberg_2(a, matrix_len, q, u, num) when matrix_len != num + 1 do
+    q_n = a
+    |> get_one_column(num)
+    |> replace_zero(num)
+    |> householder(num, u)
+
+    q_nt = transpose(q_n)
+    hess = q_n
+    |> product(a)
+    |> product(q_nt)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    hessenberg_2(hess, matrix_len, q_k, u, num+1)
+  end
+
+  defp hessenberg_2(hess, _, q_k, _, _) do
+    {hess, q_k}
+  end
+
+  defp normalize_vec(vec) do
+    norm = vec
+    |> Enum.map(& &1*&1)
+    |> Enum.sum()
+    |> :math.sqrt()
+    Enum.map(vec, & &1/norm)
+  end
+
+  @doc """
+    Calculate eigenvalues and eigenvectors by using QR decomposition.
+    #### Argument
+      - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
+    #### Output
+      [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
+      Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
+    #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
           [12.175971065046914, -3.6686830979532736, -2.507287967093643],
@@ -1595,6 +1680,50 @@ defmodule MatrixOperation do
 
   defp extract_second({_first, second}) do
     second
+  end
+
+  @doc """
+    Moore-Penrose general inverse matrix
+    #### Argument
+      - matrix: Matrix to be Moore-Penrose general inverse matrix.
+    #### Output
+      Moore-Penrose general inverse matrix
+    #### Example
+        iex> MatrixOperation.mp_inverse_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        [
+          [0.6511218659811384, 0.19630926335148915, -0.2585033392781616],
+          [0.07015255957605655, 0.03537103844170941, 5.895173073621335e-4],
+          [-0.5108167468290238, -0.12556718646806994, 0.25968237389288523]
+        ]
+    """
+  def mp_inverse_matrix(matrix) do
+    svd(matrix)
+    |> sv_matrix_inv()
+  end
+
+  defp sv_matrix_inv({sv, u, v}) do
+    # Zero matrix with index
+    sv_len = length(sv)
+    zm_idx =
+      even_matrix(0, {sv_len, sv_len})
+      |> Enum.with_index()
+    # Inverse singular value matrix
+    svm_inv =
+      Enum.map(
+        zm_idx,
+        fn {zm_row, idx} ->
+          List.replace_at(
+            zm_row,
+            idx,
+            1/Enum.at(sv, idx)
+          )
+        end
+      )
+    # VΣ^-U^T
+    vt = transpose(v)
+    vt
+    |> product(svm_inv)
+    |> product(u)
   end
 
   @doc """
