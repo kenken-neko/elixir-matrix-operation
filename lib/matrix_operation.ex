@@ -1463,9 +1463,9 @@ defmodule MatrixOperation do
   end
 
   @doc """
-    Calculate eigenvalues and eigenvectors by using QR decomposition.
+    Calculate eigenvalues and eigenvectors by using QR decomposition for symmetric matrices.
     #### Argument
-      - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
+      - a: Symmetric matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
     #### Output
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
       Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
