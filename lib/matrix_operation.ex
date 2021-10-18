@@ -1470,6 +1470,94 @@ defmodule MatrixOperation do
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
       Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
     #### Example
+        iex> MatrixOperation.eigh([[3, 0], [0, 2]])
+        {[3.0, 2.0], [[1.0, 0.0], [0.0, 1.0]]}
+        iex> MatrixOperation.eigh([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
+        {
+          [12.175971065046914, -3.6686830979532736, -2.507287967093643],
+          [
+            [0.49659978454619136, 0.3129856771935604, 0.8095854617397505],
+            [0.577350269189626, 0.5773502691896251, -0.5773502691896263],
+            [0.6481167492476514, -0.7541264035547065, -0.106009654307054]
+          ]
+        }
+    """
+  def eigh(a) do
+    # Set the number of iterations according to the number of dimensions.
+    # Refer to the LAPACK (ex. dlahqr).
+    iter_max = 30 * Enum.max([10, length(a)])
+    matrix_len = length(a)
+    u = unit_matrix(matrix_len)
+    # Hessenberg transform
+    {hess, q_h} = hessenberg(a, matrix_len, u, u, 1)
+    # Compute eigenvalues and eigenvectors
+    {eigenvals, eigenvecs} = hess
+    |> qr_iter(matrix_len, q_h, u, 0, iter_max)
+    {eigenvals, eigenvecs} = exclude_zero_eigenvalue(eigenvals, eigenvecs)
+    # Normalize
+    eigenvecs_norm_t = eigenvecs
+    |> Enum.map(& normalize_vec(&1))
+    |> transpose()
+    {eigenvals, eigenvecs_norm_t}
+  end
+
+  defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
+    q_n = qr_for_ev(a, u, matrix_len, u, 1)
+    # Compute matrix a_k
+    a_k = q_n
+    |> transpose()
+    |> product(a)
+    |> product(q_n)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
+  end
+
+  defp qr_iter(a_k, _, q_k, _, _, _) do
+    # Compute eigenvalues
+    eigenvals = a_k
+    |> Enum.with_index()
+    |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
+    # Compute eigenvectors
+    eigenvecs = transpose(q_k)
+    {eigenvals, eigenvecs}
+  end
+
+  defp hessenberg(a, matrix_len, q, u, num) when matrix_len != num + 1 do
+    q_n = a
+    |> get_one_column(num)
+    |> replace_zero(num)
+    |> householder(num, u)
+
+    q_nt = transpose(q_n)
+    hess = q_n
+    |> product(a)
+    |> product(q_nt)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    hessenberg(hess, matrix_len, q_k, u, num+1)
+  end
+
+  defp hessenberg(hess, _, q_k, _, _) do
+    {hess, q_k}
+  end
+
+  defp normalize_vec(vec) do
+    norm = vec
+    |> Enum.map(& &1*&1)
+    |> Enum.sum()
+    |> :math.sqrt()
+    Enum.map(vec, & &1/norm)
+  end
+
+  @doc """
+    Calculate eigenvalues and eigenvectors by using QR decomposition.
+    #### Argument
+      - a: Matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
+    #### Output
+      [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
+      Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
+    #### Example
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
           [12.175971065046914, -3.6686830979532736, -2.507287967093643],
@@ -1499,8 +1587,10 @@ defmodule MatrixOperation do
     iter_max = 30 * Enum.max([10, length(a)])
     matrix_len = length(a)
     u = unit_matrix(matrix_len)
-    a
-    |> hessenberg(matrix_len, u, 1)
+    # Hessenberg transform
+    {hess, _q} = hessenberg(a, matrix_len, u, u, 1)
+    # Compute eigenvalues and eigenvectors
+    hess
     |> eigenvalue_sub(matrix_len, u, 0, iter_max)
     |> exclude_zero_eigenvalue()
   end
@@ -1534,24 +1624,6 @@ defmodule MatrixOperation do
 
   defp qr_for_ev(_, q_n, _, _, _) do
     q_n
-  end
-
-  defp hessenberg(a, matrix_len, u, num) when matrix_len != num + 1 do
-    q = a
-    |> get_one_column(num)
-    |> replace_zero(num)
-    |> householder(num, u)
-
-    qt = transpose(q)
-    hess = q
-    |> product(a)
-    |> product(qt)
-
-    hessenberg(hess, matrix_len, u, num+1)
-  end
-
-  defp hessenberg(hess, _, _, _) do
-    hess
   end
 
   defp replace_zero(list, thresh_num) do
