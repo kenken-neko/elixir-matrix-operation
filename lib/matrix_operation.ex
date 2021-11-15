@@ -1501,6 +1501,7 @@ defmodule MatrixOperation do
   end
 
   defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
+    a = wilkinson_shift(a, matrix_len, "minus")
     q_n = qr_for_ev(a, u, matrix_len, u, 1)
     # Compute matrix a_k
     a_k = q_n
@@ -1508,7 +1509,9 @@ defmodule MatrixOperation do
     |> product(a)
     |> product(q_n)
     # Compute matrix q_k
-    q_k = product(q, q_n)
+    q_k = q
+    |> product(q_n)
+    |> wilkinson_shift(matrix_len, "plus")
     qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
   end
 
@@ -1520,6 +1523,28 @@ defmodule MatrixOperation do
     # Compute eigenvectors
     eigenvecs = transpose(q_k)
     {eigenvals, eigenvecs}
+  end
+
+  defp wilkinson_shift(a, matrix_len, pm) do
+    # The bottom right elements of the matrix
+    w11 = get_one_element(a, {matrix_len-1, matrix_len-1})
+    w12 = get_one_element(a, {matrix_len-1, matrix_len})
+    w21 = get_one_element(a, {matrix_len,   matrix_len-1})
+    w22 = get_one_element(a, {matrix_len,   matrix_len})
+    # Wilkinson shift value
+    e = w11 + w22
+    f = :math.sqrt(e * e - 4 * (w11 * w22 - w12 * w21))
+    k1 = 0.5 * (e + f)
+    k2 = 0.5 * (e - f)
+    shift_val = if(abs(w22 - k1) < abs(w22 - k2), do: k1, else: k2)
+    # Shift matrix
+    um = unit_matrix(matrix_len)
+    shift_matrix = const_multiple(shift_val, um)
+    if(
+      pm=="minus",
+      do: subtract(a, shift_matrix),
+      else: add(a, shift_matrix)
+    )
   end
 
   defp hessenberg(a, matrix_len, q, u, num) when matrix_len != num + 1 do
