@@ -1510,10 +1510,9 @@ defmodule MatrixOperation do
     |> transpose()
     |> product(a)
     |> product(q_n)
-    # Compute matrix q_k
-    q_k = q
-    |> product(q_n)
     |> eigen_shift(shift)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
     qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
   end
 
@@ -1541,17 +1540,13 @@ defmodule MatrixOperation do
     k2 = 0.5 * (e - f)
     if(abs(w22 - k1) < abs(w22 - k2), do: k1, else: k2)
   end
-  
+
   defp eigen_shift(a, shift) do
     um = a
     |> length()
     |> unit_matrix()
     shift_matrix = const_multiple(shift, um)
-    if(
-      shift >= 0,
-      do: add(a, shift_matrix),
-      else: subtract(a, shift_matrix)
-    )
+    add(a, shift_matrix)
   end
 
   defp hessenberg(a, matrix_len, q, u, num) when matrix_len != num + 1 do
@@ -1594,7 +1589,7 @@ defmodule MatrixOperation do
           [12.175971065046914, -3.6686830979532736, -2.507287967093643],
           [
             [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
-            [0.3129856771935595, 0.5773502691896258, -0.7541264035547063],
+            [-0.3129856771935595, -0.5773502691896258, 0.7541264035547063],
             [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
           ]
         }
