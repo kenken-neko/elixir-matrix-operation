@@ -1500,6 +1500,20 @@ defmodule MatrixOperation do
     {eigenvals, eigenvecs_norm_t}
   end
 
+  defp qr_iter(a, matrix_len, q, u, count, iter_max)
+    when count != iter_max and matrix_len <= 2 do
+    q_n = a
+    |> qr_for_ev(u, matrix_len, u, 1)
+    # Compute matrix a_k
+    a_k = q_n
+    |> transpose()
+    |> product(a)
+    |> product(q_n)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
+  end
+
   defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
     shift = wilkinson_shift_value(a)
     q_n = a
@@ -1530,15 +1544,16 @@ defmodule MatrixOperation do
     # The bottom right elements of the matrix
     matrix_len = length(a)
     w11 = get_one_element(a, {matrix_len-1, matrix_len-1})
-    w12 = get_one_element(a, {matrix_len-1, matrix_len})
-    w21 = get_one_element(a, {matrix_len,   matrix_len-1})
+    w12 = get_one_element(a, {matrix_len-1, matrix_len})  # w12 = w21
     w22 = get_one_element(a, {matrix_len,   matrix_len})
     # Wilkinson shift value
-    e = w11 + w22
-    f = :math.sqrt(e * e - 4 * (w11 * w22 - w12 * w21))
-    k1 = 0.5 * (e + f)
-    k2 = 0.5 * (e - f)
-    if(abs(w22 - k1) < abs(w22 - k2), do: k1, else: k2)
+    d = 0.5 * (w11 - w22)
+    sign = if(d > 0, do: +1, else: -1)
+    if(
+      d < 0.00001,
+      do: w22 - abs(w12),
+      else: w22 + w12 * w12 / (d + sign * :math.sqrt(d * d + w12 * w12))
+    )
   end
 
   defp eigen_shift(a, shift) do
