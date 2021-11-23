@@ -1416,7 +1416,7 @@ defmodule MatrixOperation do
           [1.7320508075688772, 1.4142135623730951],
           [
             [0.5773502691896258, 0.5773502691896258, 0.5773502691896258],
-            [-0.7071067811865476, 0.7071067811865476, 0.0]
+            [0.7071067811865476, -0.7071067811865476, 0.0]
           ],
           [
             [1.0, 0.0],
@@ -1473,11 +1473,27 @@ defmodule MatrixOperation do
         {[3.0, 2.0], [[1.0, 0.0], [0.0, 1.0]]}
         iex> MatrixOperation.eigh([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
-          [12.175971065046914, -3.6686830979532736, -2.507287967093643],
+          [12.175971065046884, -2.50728796709364, -3.6686830979532647],
           [
-            [0.49659978454619136, 0.3129856771935604, 0.8095854617397505],
-            [0.577350269189626, 0.5773502691896251, -0.5773502691896263],
-            [0.6481167492476514, -0.7541264035547065, -0.106009654307054]
+            [0.496599784546191, 0.8095854617397509, -0.3129856771935597],
+            [0.577350269189626, -0.577350269189626, -0.5773502691896257],
+            [0.6481167492476515, -0.10600965430705458, 0.7541264035547063]
+          ]
+        }
+        iex> row1 = [ 5, -1, 0, 1, 2]
+        iex> row2 = [-1,  5, 0, 5, 3]
+        iex> row3 = [ 0,  0, 4, 7, 2]
+        iex> row4 = [ 1,  5, 7, 0, 9]
+        iex> row5 = [ 2,  3, 2, 9, 2]
+        iex> MatrixOperation.eigh([row1, row2, row3, row4, row5])
+        {
+          [16.394097630317376, 5.901499037899706, 4.334013998770404, -0.891690865956603, -9.737919801031268],
+          [
+            [0.11199211262602528, -0.8283773397697639, -0.4403916223463706, 0.3275456024443265, -0.00422456530824197],
+            [0.39542664705563546, 0.5332887206459925, -0.5342108202525103, 0.4973517482650887, 0.16279110925630544],
+            [0.4267472595014673, -0.13695943658576812, 0.6991586689712901, 0.4519460705200494, 0.3256544091239611],
+            [0.6029452475982553, -0.007822597120772413, 0.07907415791820135, -0.1297224632045824, -0.7831444282267664],
+            [0.5342652322719152, -0.10283502852688214, -0.15999516131462643, -0.651361611317911, 0.5040984210950804]
           ]
         }
     """
@@ -1500,13 +1516,31 @@ defmodule MatrixOperation do
     {eigenvals, eigenvecs_norm_t}
   end
 
-  defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
-    q_n = qr_for_ev(a, u, matrix_len, u, 1)
+  defp qr_iter(a, matrix_len, q, u, count, iter_max)
+    when count != iter_max and matrix_len <= 2 do
+    q_n = a
+    |> qr_for_ev(u, matrix_len, u, 1)
     # Compute matrix a_k
     a_k = q_n
     |> transpose()
     |> product(a)
     |> product(q_n)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
+  end
+
+  defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
+    shift = wilkinson_shift_value(a)
+    a_s = eigen_shift(a, -shift)
+    q_n = qr_for_ev(a_s, u, matrix_len, u, 1)
+    # Compute matrix a_k
+    a_k = q_n
+    |> transpose()
+    |> product(a_s)
+    |> product(q_n)
+    |> eigen_shift(shift)
+
     # Compute matrix q_k
     q_k = product(q, q_n)
     qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
@@ -1520,6 +1554,29 @@ defmodule MatrixOperation do
     # Compute eigenvectors
     eigenvecs = transpose(q_k)
     {eigenvals, eigenvecs}
+  end
+
+  defp wilkinson_shift_value(a) do
+    # The bottom right elements of the matrix
+    matrix_len = length(a)
+    w11 = get_one_element(a, {matrix_len-1, matrix_len-1})
+    w12 = get_one_element(a, {matrix_len-1, matrix_len})
+    w21 = w12
+    w22 = get_one_element(a, {matrix_len,   matrix_len})
+    # Wilkinson shift value
+    e = w11 + w22
+    f = :math.sqrt(e * e - 4 * (w11 * w22 - w12 * w21))
+    k1 = 0.5 * (e + f)
+    k2 = 0.5 * (e - f)
+    if(abs(w22 - k1) < abs(w22 - k2), do: k1, else: k2)
+  end
+
+  defp eigen_shift(a, shift) do
+    um = a
+    |> length()
+    |> unit_matrix()
+    shift_matrix = const_multiple(shift, um)
+    add(a, shift_matrix)
   end
 
   defp hessenberg(a, matrix_len, q, u, num) when matrix_len != num + 1 do
@@ -1562,7 +1619,7 @@ defmodule MatrixOperation do
           [12.175971065046914, -3.6686830979532736, -2.507287967093643],
           [
             [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
-            [0.3129856771935595, 0.5773502691896258, -0.7541264035547063],
+            [-0.3129856771935595, -0.5773502691896258, 0.7541264035547063],
             [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
           ]
         }
