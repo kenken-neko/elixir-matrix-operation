@@ -1401,10 +1401,10 @@ defmodule MatrixOperation do
     #### Example
         iex> MatrixOperation.svd([[1, 0, 0], [0, 1, 1]])
         {
-          [1.0, 1.4142135623730951],
+          [1.4142135623730951, 1.0],
           [
-            [1.0, 0.0],
-            [0.0, 1.0]
+            [0.0, 1.0],
+            [1.0, 0.0]
           ],
           [
             [1.0, 0.0, 0.0],
@@ -1614,6 +1614,15 @@ defmodule MatrixOperation do
       [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
       Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
     #### Example
+        iex> MatrixOperation.eigen([[1, 4], [4, 2]])
+        {
+          [12.175971065046914, -3.6686830979532736, -2.507287967093643],
+          [
+            [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
+            [-0.3129856771935595, -0.5773502691896258, 0.7541264035547063],
+            [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
+          ]
+        }
         iex> MatrixOperation.eigen([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
         {
           [12.175971065046914, -3.6686830979532736, -2.507287967093643],
@@ -1626,7 +1635,8 @@ defmodule MatrixOperation do
     """
   def eigen(a) do
     delta = 0.0001 # avoid division by zero
-    evals = eigenvalue(a)
+    a_len = length(a)
+    evals = eigenvalue(a, a_len)
     evecs = evals
     |> Enum.map(
       & eigenvalue_shift(a, -&1+delta)
@@ -1637,7 +1647,13 @@ defmodule MatrixOperation do
     {evals, evecs}
   end
 
-  defp eigenvalue(a) do
+  defp eigenvalue(a, a_len) when a_len == 2 do
+    a
+    |> eigenvalue_algebra()
+    |> Tuple.to_list()
+  end
+
+  defp eigenvalue(a, a_len) do
     # Set the number of iterations according to the number of dimensions.
     # Refer to the LAPACK (ex. dlahqr).
     iter_max = 30 * Enum.max([10, length(a)])
@@ -1733,7 +1749,7 @@ defmodule MatrixOperation do
       Diagonalized matrix
     #### Example
         iex> MatrixOperation.diagonalization([[1, 3], [4, 2]])
-        [[5.000000000000018, 0], [0, -1.999999999999997]]
+        [[5.0, 0], [0, -2.0]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 5], [-1, 2, 1]])
         [[4.101784906061095, 0, 0], [0, -2.6170329440542233, 0], [0, 0, 2.515248037993127]]
         iex> MatrixOperation.diagonalization([[2, 1, -1], [1, 1, 0], [-1, 0, 1]])
@@ -1750,7 +1766,8 @@ defmodule MatrixOperation do
         ]
     """
   def diagonalization(a) do
-    ev = eigenvalue(a)
+    a_len = length(a)
+    ev = eigenvalue(a, a_len)
     if(length(ev)==length(a), do: ev, else: nil)
     |> diagonalization_condition()
   end
@@ -1789,10 +1806,11 @@ defmodule MatrixOperation do
         {14.9121726205599, 4.23646340778201, 1.6369134152873912}
     """
   def singular_value(a) do
+    a_len = length(a)
     a
     |> transpose()
     |> product(a)
-    |> eigenvalue()
+    |> eigenvalue(a_len)
     |> Enum.map(& :math.sqrt(&1))
     |> List.to_tuple()
   end
