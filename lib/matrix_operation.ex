@@ -1416,19 +1416,18 @@ defmodule MatrixOperation do
           [1.7320508075688772, 1.4142135623730951],
           [
             [0.5773502691896258, 0.5773502691896258, 0.5773502691896258],
-            [-0.7071067811865476, 0.7071067811865476, 0.0]
+            [0.7071067811865476, -0.7071067811865476, 0.0]
           ],
-          [[1.0, 0.0], [0.0, 1.0]]
+          [
+            [1.0, 0.0],
+            [0.0, 1.0]
+          ]
         }
         iex> MatrixOperation.svd([[1, 1], [1, 1]])
         {
           [1.9999999999999998],
-          [
-            [0.7071067811865476, 0.7071067811865476]
-          ],
-          [
-            [0.7071067811865476, 0.7071067811865476]
-          ]
+          [[0.7071067811865476, 0.7071067811865476]],
+          [[0.7071067811865476, 0.7071067811865476]]
         }
     """
   def svd(a) do
@@ -1519,7 +1518,7 @@ defmodule MatrixOperation do
           [12.175971065046914, -3.6686830979532736, -2.507287967093643],
           [
             [0.4965997845461912, 0.5773502691896258, 0.6481167492476514],
-            [0.3129856771935595, 0.5773502691896258, -0.7541264035547063],
+            [-0.3129856771935595, -0.5773502691896258, 0.7541264035547063],
             [-0.8095854617397507, 0.577350269189626, 0.10600965430705471]
           ]
         }
@@ -1543,8 +1542,10 @@ defmodule MatrixOperation do
     iter_max = 30 * Enum.max([10, length(a)])
     matrix_len = length(a)
     u = unit_matrix(matrix_len)
-    a
-    |> hessenberg(matrix_len, u, 1)
+    # Hessenberg transform
+    {hess, _q} = hessenberg(a, matrix_len, u, u, 1)
+    # Compute eigenvalues and eigenvectors
+    hess
     |> eigenvalue_sub(matrix_len, u, 0, iter_max)
     |> exclude_zero_eigenvalue()
   end
@@ -1578,24 +1579,6 @@ defmodule MatrixOperation do
 
   defp qr_for_ev(_, q_n, _, _, _) do
     q_n
-  end
-
-  defp hessenberg(a, matrix_len, u, num) when matrix_len != num + 1 do
-    q = a
-    |> get_one_column(num)
-    |> replace_zero(num)
-    |> householder(num, u)
-
-    qt = transpose(q)
-    hess = q
-    |> product(a)
-    |> product(qt)
-
-    hessenberg(hess, matrix_len, u, num+1)
-  end
-
-  defp hessenberg(hess, _, _, _) do
-    hess
   end
 
   defp replace_zero(list, thresh_num) do
