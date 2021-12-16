@@ -1462,6 +1462,50 @@ defmodule MatrixOperation do
   end
 
   @doc """
+    Moore-Penrose general inverse matrix
+    #### Argument
+      - matrix: Matrix to be Moore-Penrose general inverse matrix.
+    #### Output
+      Moore-Penrose general inverse matrix
+    #### Example
+        iex> MatrixOperation.mp_inverse_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        [
+          [-0.6388888888888877, -0.16666666666666777, 0.30555555555555647],
+          [-0.0555555555555557, -1.8041124150158794e-16, 0.05555555555555575],
+          [0.5277777777777768, 0.16666666666666755, -0.19444444444444522]
+        ]
+    """
+  def mp_inverse_matrix(matrix) do
+    svd(matrix)
+    |> sv_matrix_inv()
+  end
+
+  defp sv_matrix_inv({sv, u, v}) do
+    # Zero matrix with index
+    sv_len = length(sv)
+    zm_idx =
+      even_matrix(0, {sv_len, sv_len})
+      |> Enum.with_index()
+    # Inverse singular value matrix
+    svm_inv =
+      Enum.map(
+        zm_idx,
+        fn {zm_row, idx} ->
+          List.replace_at(
+            zm_row,
+            idx,
+            1/Enum.at(sv, idx)
+          )
+        end
+      )
+    # VΣ^-U^T
+    vt = transpose(v)
+    vt
+    |> product(svm_inv)
+    |> product(u)
+  end
+
+  @doc """
     Calculate eigenvalues and eigenvectors by using QR decomposition for symmetric matrices.
     #### Argument
       - a: Symmetric matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
