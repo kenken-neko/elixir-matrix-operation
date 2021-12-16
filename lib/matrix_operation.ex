@@ -1470,9 +1470,9 @@ defmodule MatrixOperation do
     #### Example
         iex> MatrixOperation.mp_inverse_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         [
-          [0.6511218659811384, 0.19630926335148915, -0.2585033392781616],
-          [0.07015255957605655, 0.03537103844170941, 5.895173073621335e-4],
-          [-0.5108167468290238, -0.12556718646806994, 0.25968237389288523]
+          [-0.6388888888888877, -0.16666666666666777, 0.30555555555555647],
+          [-0.0555555555555557, -1.8041124150158794e-16, 0.05555555555555575],
+          [0.5277777777777768, 0.16666666666666755, -0.19444444444444522]
         ]
     """
   def mp_inverse_matrix(matrix) do
@@ -1503,6 +1503,151 @@ defmodule MatrixOperation do
     vt
     |> product(svm_inv)
     |> product(u)
+  end
+
+  @doc """
+    Calculate eigenvalues and eigenvectors by using QR decomposition for symmetric matrices.
+    #### Argument
+      - a: Symmetric matrix to calculate eigenvalues and eigenvectors by using the QR decomposition.
+    #### Output
+      [Eigenvalues list, Eigenvectors list]: Eigenvalues and eigenvectors.
+      Eigenvalue is a non-trivial value other than zero, and complex numbers are not supported.
+    #### Example
+        iex> MatrixOperation.eigh([[3, 0], [0, 2]])
+        {[3.0, 2.0], [[1.0, 0.0], [0.0, 1.0]]}
+        iex> MatrixOperation.eigh([[1, 4, 5], [4, 2, 6], [5, 6, 3]])
+        {
+          [12.175971065046884, -2.50728796709364, -3.6686830979532647],
+          [
+            [0.496599784546191, 0.8095854617397509, -0.3129856771935597],
+            [0.577350269189626, -0.577350269189626, -0.5773502691896257],
+            [0.6481167492476515, -0.10600965430705458, 0.7541264035547063]
+          ]
+        }
+        iex> row1 = [ 5, -1, 0, 1, 2]
+        iex> row2 = [-1,  5, 0, 5, 3]
+        iex> row3 = [ 0,  0, 4, 7, 2]
+        iex> row4 = [ 1,  5, 7, 0, 9]
+        iex> row5 = [ 2,  3, 2, 9, 2]
+        iex> MatrixOperation.eigh([row1, row2, row3, row4, row5])
+        {
+          [16.394097630317376, 5.901499037899706, 4.334013998770404, -0.891690865956603, -9.737919801031268],
+          [
+            [0.11199211262602528, -0.8283773397697639, -0.4403916223463706, 0.3275456024443265, -0.00422456530824197],
+            [0.39542664705563546, 0.5332887206459925, -0.5342108202525103, 0.4973517482650887, 0.16279110925630544],
+            [0.4267472595014673, -0.13695943658576812, 0.6991586689712901, 0.4519460705200494, 0.3256544091239611],
+            [0.6029452475982553, -0.007822597120772413, 0.07907415791820135, -0.1297224632045824, -0.7831444282267664],
+            [0.5342652322719152, -0.10283502852688214, -0.15999516131462643, -0.651361611317911, 0.5040984210950804]
+          ]
+        }
+    """
+  def eigh(a) do
+    # Set the number of iterations according to the number of dimensions.
+    # Refer to the LAPACK (ex. dlahqr).
+    iter_max = 30 * Enum.max([10, length(a)])
+    matrix_len = length(a)
+    u = unit_matrix(matrix_len)
+    # Hessenberg transform
+    {hess, q_h} = hessenberg(a, matrix_len, u, u, 1)
+    # Compute eigenvalues and eigenvectors
+    {eigenvals, eigenvecs} = hess
+    |> qr_iter(matrix_len, q_h, u, 0, iter_max)
+    {eigenvals, eigenvecs} = exclude_zero_eigenvalue(eigenvals, eigenvecs)
+    # Normalize
+    eigenvecs_norm_t = eigenvecs
+    |> Enum.map(& normalize_vec(&1))
+    |> transpose()
+    {eigenvals, eigenvecs_norm_t}
+  end
+
+  defp qr_iter(a, matrix_len, q, u, count, iter_max)
+    when count != iter_max and matrix_len <= 2 do
+    q_n = a
+    |> qr_for_ev(u, matrix_len, u, 1)
+    # Compute matrix a_k
+    a_k = q_n
+    |> transpose()
+    |> product(a)
+    |> product(q_n)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
+  end
+
+  defp qr_iter(a, matrix_len, q, u, count, iter_max) when count != iter_max do
+    shift = wilkinson_shift_value(a)
+    a_s = eigen_shift(a, -shift)
+    q_n = qr_for_ev(a_s, u, matrix_len, u, 1)
+    # Compute matrix a_k
+    a_k = q_n
+    |> transpose()
+    |> product(a_s)
+    |> product(q_n)
+    |> eigen_shift(shift)
+
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    qr_iter(a_k, matrix_len, q_k, u, count+1, iter_max)
+  end
+
+  defp qr_iter(a_k, _, q_k, _, _, _) do
+    # Compute eigenvalues
+    eigenvals = a_k
+    |> Enum.with_index()
+    |> Enum.map(fn {x, i} -> Enum.at(x, i) end)
+    # Compute eigenvectors
+    eigenvecs = transpose(q_k)
+    {eigenvals, eigenvecs}
+  end
+
+  defp wilkinson_shift_value(a) do
+    # The bottom right elements of the matrix
+    matrix_len = length(a)
+    w11 = get_one_element(a, {matrix_len-1, matrix_len-1})
+    w12 = get_one_element(a, {matrix_len-1, matrix_len})
+    w21 = w12
+    w22 = get_one_element(a, {matrix_len,   matrix_len})
+    # Wilkinson shift value
+    e = w11 + w22
+    f = :math.sqrt(e * e - 4 * (w11 * w22 - w12 * w21))
+    k1 = 0.5 * (e + f)
+    k2 = 0.5 * (e - f)
+    if(abs(w22 - k1) < abs(w22 - k2), do: k1, else: k2)
+  end
+
+  defp eigen_shift(a, shift) do
+    um = a
+    |> length()
+    |> unit_matrix()
+    shift_matrix = const_multiple(shift, um)
+    add(a, shift_matrix)
+  end
+
+  defp hessenberg(a, matrix_len, q, u, num) when matrix_len != num + 1 do
+    q_n = a
+    |> get_one_column(num)
+    |> replace_zero(num)
+    |> householder(num, u)
+
+    q_nt = transpose(q_n)
+    hess = q_n
+    |> product(a)
+    |> product(q_nt)
+    # Compute matrix q_k
+    q_k = product(q, q_n)
+    hessenberg(hess, matrix_len, q_k, u, num+1)
+  end
+
+  defp hessenberg(hess, _, q_k, _, _) do
+    {hess, q_k}
+  end
+
+  defp normalize_vec(vec) do
+    norm = vec
+    |> Enum.map(& &1*&1)
+    |> Enum.sum()
+    |> :math.sqrt()
+    Enum.map(vec, & &1/norm)
   end
 
   @doc """
