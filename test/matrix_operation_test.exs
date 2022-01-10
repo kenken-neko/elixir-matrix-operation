@@ -31,4 +31,18 @@ defmodule MatrixOperationTest do
       assert left == right
     end
   end
+
+  describe "solve_sle" do
+    test "property" do
+      # Solve simultaneous linear equations: a.x = y
+      a = [[4, 1, 1], [1, 3, 1], [2, 1, 5]]
+      y = [[9], [10], [19]]
+      insert_in_vec = fn x -> [x] end
+      x = a
+      |> solve_sle(y)
+      |> insert_in_vec.()
+      |> transpose()
+      assert product(a, x) == y
+    end
+  end
 end
