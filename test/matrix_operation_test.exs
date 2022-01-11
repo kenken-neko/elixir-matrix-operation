@@ -32,6 +32,21 @@ defmodule MatrixOperationTest do
     end
   end
 
+  describe "eigen" do
+    test "property" do
+      a = [[1, 4, 5], [4, 2, 6], [5, 6, 3]]
+      {evals, evecs} = eigen(a)
+      evals_matrix = [
+        [Enum.at(evals, 0), 0, 0],
+        [0, Enum.at(evals, 1), 0],
+        [0, 0, Enum.at(evals, 2)]
+      ]
+      left = product(evals_matrix, evecs) |> Enum.map(& Enum.map(&1, fn x -> Float.round(x, 7) end))
+      right = product(evecs, a) |> Enum.map(& Enum.map(&1, fn x -> Float.round(x, 7) end))
+      assert left == right
+    end
+  end
+
   describe "solve_sle" do
     test "property" do
       # Solve simultaneous linear equations: a.x = y
