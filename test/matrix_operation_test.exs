@@ -60,4 +60,25 @@ defmodule MatrixOperationTest do
       assert product(a, x) == y
     end
   end
+
+  @tag :skip
+  describe "svd" do
+    test "property" do
+      # Singular Value Decomposition: a = u.s.v_t
+      a = [[4, 1, 2], [1, 3, 1], [2, 1, 5]]
+      {sv, u, v} = svd(a)
+      v_t = transpose(v)
+      s = [
+        [Enum.at(sv, 0), 0, 0],
+        [0, Enum.at(sv, 1), 0],
+        [0, 0, Enum.at(sv, 2)]
+      ]
+      result = u
+      |> product(s)
+      |> product(v_t)
+      |> Enum.map(& Enum.map(&1, fn x -> Float.round(x, 7) end))
+      # TODO: The signs don't match
+      assert a == result
+    end
+  end
 end
