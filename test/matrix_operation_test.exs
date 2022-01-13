@@ -16,6 +16,20 @@ defmodule MatrixOperationTest do
     end
   end
 
+  @tag :skip
+  describe "mp_inverse_matrix" do
+    test "property" do
+      a = [[1, 1, -1], [-2, -1, 1], [-1, -2, 1]]
+      result = a
+      |> mp_inverse_matrix()
+      |> product(a)
+
+      expect = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+      # TODO: The Moore-Penrose general inverse matrix does not match the inverse matrix
+      assert result  == expect
+    end
+  end
+
   describe "eigh" do
     test "property" do
       a = [[1, 4, 5], [4, 2, 6], [5, 6, 3]]
